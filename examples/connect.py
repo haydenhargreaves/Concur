@@ -5,8 +5,8 @@ Example: Connect to RabbitMQ broker
 import time
 import paho.mqtt.client as mqtt
 
-DOMAIN: str = "concur.gophernest.net"
-PORT: int = 443  # Default HTTPS port
+DOMAIN: str = "ddns.gophernest.net"
+PORT: int = 3100
 PASSWORD: str = ""
 USERNAME: str = ""
 CLIENT: str = "python_connection_example"
@@ -18,16 +18,16 @@ def on_connect(client, userdata, flags, reason_code, properties):
     """
     _, _, _, _ = client, userdata, flags, properties
     if reason_code == 0:
-        print("✅ Connected to RabbitMQ via WebSockets!")
+        print("✅ Connected to RabbitMQ via TCP!")
     else:
         print(f"❌ Connection failed with code: {reason_code}")
 
 
-# Set the transport to websockets
+# Set the transport to tcp
 conn = mqtt.Client(
     mqtt.CallbackAPIVersion.VERSION2,
     client_id=CLIENT,
-    transport="websockets",
+    transport="tcp",
     protocol=mqtt.MQTTv5,
 )
 
@@ -35,8 +35,6 @@ conn = mqtt.Client(
 conn.username_pw_set(USERNAME, PASSWORD)
 conn.on_connect = on_connect
 
-conn.ws_set_options(path="/ws")
-conn.tls_set()
 conn.connect(DOMAIN, PORT)
 
 # Start the loop in the background so your threading logic isn't blocked
