@@ -1,0 +1,10 @@
+name: Node B Sensors
+description: "Reads Modulino distance/movement/light sensors over Bridge and runs local presence/disturbance classification"
+icon: 📡
+version: "1.0.0"
+
+# Optional: ports exposed by this app (none yet)
+ports: []
+
+# Optional: App Lab "Bricks" / pre-built components (none used)
+bricks: []

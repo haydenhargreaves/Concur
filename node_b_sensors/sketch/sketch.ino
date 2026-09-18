@@ -22,7 +22,8 @@ int current_lightLux = -1, current_lightRaw = -1, current_lightIR = -1;
 // =====================================================
 // Function called from Python through Bridge
 // =====================================================
-String readSensors() {
+String readSensors()
+{
 
   String data = "{";
   data += "\"distance_mm\":" + String(current_distance_mm, 1) + ",";
@@ -46,7 +47,8 @@ String readSensors() {
 // =====================================================
 // Arduino setup
 // =====================================================
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Modulino.begin();
   delay(500);
@@ -62,22 +64,27 @@ void setup() {
 // =====================================================
 // Arduino loop
 // =====================================================
-void loop() {
+void loop()
+{
   Bridge.update();
 
-    if (distanceSensor.available()) {
+  if (distanceSensor.available())
+  {
     float newDistance = distanceSensor.get();
-    
+
     current_distance_mm = newDistance;
-    lastDistanceUpdate = millis(); 
+    lastDistanceUpdate = millis();
 
     Serial.print("NEW DISTANCE: ");
     Serial.println(newDistance);
-  } else if (millis() - lastDistanceUpdate > 250) {
-    current_distance_mm = -1.0; 
+  }
+  else if (millis() - lastDistanceUpdate > 250)
+  {
+    current_distance_mm = -1.0;
   }
 
-  if (movementSensor.available()) {
+  if (movementSensor.available())
+  {
     movementSensor.update();
     current_accelX = movementSensor.getX();
     current_accelY = movementSensor.getY();
@@ -87,11 +94,10 @@ void loop() {
     current_gyroZ = movementSensor.getYaw();
   }
 
-    lightSensor.update();
-    current_lightLux = lightSensor.getLux();
-    current_lightRaw = lightSensor.getAL();
-    current_lightIR = lightSensor.getIR();
-
+  lightSensor.update();
+  current_lightLux = lightSensor.getLux();
+  current_lightRaw = lightSensor.getAL();
+  current_lightIR = lightSensor.getIR();
 
   delay(100);
 }
