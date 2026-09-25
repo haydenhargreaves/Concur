@@ -1,0 +1,6 @@
+name: Concur
+description: This example showcases object detection within a live feed from a USB camera.
+ports: []
+bricks:
+  - arduino:video_object_detection: {}
+icon: 📽️
