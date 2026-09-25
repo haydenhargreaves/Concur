@@ -11,8 +11,8 @@ python -m streamlit run fusion_dashboard/app.py
 ```
 
 In the sidebar, fill in the broker host, port, credentials, and the two
-topic names, then click **Connect**. Node B publishes to `sensors/node_b/state` (see
-`node_b_sensors/python/mqtt_publisher.py`)
+topic names, then click **Connect**. Node B publishes to `sensors/node_b/state`
+via the shared `lib/rabbit.py` (see `node_b_sensors/python/main.py`).
 
 Each node's published JSON payload is expected to look like:
 

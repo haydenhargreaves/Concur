@@ -21,11 +21,10 @@ After that, the App Lab GUI is optional for day-to-day development.
 ```
 node_b_sensors/
 ├── app.yaml            # App Lab/CLI app manifest (Linux side)
+├── deploy.sh           # Deploys/redeploys to the board (see below)
 ├── python/
 │   ├── main.py
 │   ├── classifier.py
-│   ├── mqtt_publisher.py  # Publishes classification results to the broker
-│   ├── .env.example       # Copy to .env and fill in the real broker credentials
 │   └── requirements.txt
 └── sketch/
     ├── sketch.ino
@@ -34,19 +33,23 @@ node_b_sensors/
                           # it's running on)
 ```
 
+`main.py` publishes over MQTT via `lib/rabbit.py` (shared with `node_a_cam` -
+see the repo root `lib/`), which `deploy.sh` copies onto the board alongside
+this folder.
+
 ## Broker credentials
 
-`mqtt_publisher.py` reads `MQTT_USERNAME`/`MQTT_PASSWORD` from a `.env` file
-next to it (via `python-dotenv`) instead of hardcoding them. Before running
-or deploying:
+`lib/rabbit.py` reads `MQTT_USERNAME`/`MQTT_PASSWORD` from `lib/.env` (via
+`python-dotenv`) instead of hardcoding them. Before running or deploying
+either node:
 
 ```
-cp python/.env.example python/.env
-# then fill in the real broker username/password in python/.env
+cp lib/.env.example lib/.env
+# then fill in the real broker username/password in lib/.env
 ```
 
-`.env` is gitignored - it never gets committed, but `deploy.sh`/`scp` still
-copies it to the board since that's a plain filesystem copy.
+`lib/.env` is gitignored - it never gets committed, but `deploy.sh`/`scp`
+still copies it onto the board since that's a plain filesystem copy.
 
 ## Publishing to the fusion dashboard
 
@@ -65,32 +68,23 @@ fill in the same broker host/credentials/topic in the sidebar, and click
 
 1. Find the board's IP (via `ip addr show` over an initial SSH/serial
    session, or the App Lab connection screen).
-2. First deploy only, copy this folder to the board:
+2. Deploy (works for both the first deploy and any later redeploy):
    ```
-   scp -r node_b_sensors arduino@<BOARD_IP>:~/ArduinoApps/node_b_sensors
+   ./deploy.sh <BOARD_IP>
    ```
-3. Start, watch, and stop the app:
+   Plain `scp -r` into a remote directory that already exists nests the
+   source folder inside itself instead of overwriting it, so a second
+   manual `scp` would leave the app running stale files - `deploy.sh` stops
+   the app, wipes any old copy, copies this folder plus the shared `lib/`
+   (flattened into `python/`, same as `scripts/node_a/deploy.sh`), and
+   restarts it.
+3. Watch or stop the app:
    ```
    ssh arduino@<BOARD_IP>
-   arduino-app-cli app start ~/ArduinoApps/node_b_sensors
    arduino-app-cli app logs ~/ArduinoApps/node_b_sensors
    arduino-app-cli app stop ~/ArduinoApps/node_b_sensors
    ```
 
-### Redeploying after changes
-
-`scp -r` into a remote directory that already exists nests the folder
-inside itself (`~/ArduinoApps/node_b_sensors/node_b_sensors/...`) instead
-of overwriting it, so the app keeps running stale files. Use `deploy.sh`
-instead of repeating step 2 by hand - it stops the app, wipes the old
-copy, re-copies, and restarts it in one go:
-
-```
-./deploy.sh <BOARD_IP>
-```
-
 Note: Python output does not print live to your SSH session when run this
 way — `print()` calls go to the app's log file, so use `app logs` to see
 them.
-
-
