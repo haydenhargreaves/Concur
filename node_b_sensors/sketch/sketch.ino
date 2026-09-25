@@ -99,5 +99,5 @@ void loop()
   current_lightRaw = lightSensor.getAL();
   current_lightIR = lightSensor.getIR();
 
-  delay(100);
+  delay(50);
 }

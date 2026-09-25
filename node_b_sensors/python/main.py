@@ -4,14 +4,11 @@ import json
 from arduino.app_utils import App, Bridge
 
 from classifier import classify_node_b
+from mqtt_publisher import connect as mqtt_connect, publish_state
 
+READ_INTERVAL = 0.5
 
-# =====================================================
-# Configuration
-# =====================================================
-
-READ_INTERVAL = 1.0
-
+mqtt_client = mqtt_connect()
 
 # =====================================================
 # Read sensors from Arduino MCU
@@ -131,6 +128,12 @@ def loop():
         print(f"Confidence : {confidence:.2f}")
 
         print("----------------------------------------")
+
+        # ---------------------------------------------
+        # 5. Publish to MQTT for the fusion dashboard
+        # ---------------------------------------------
+
+        publish_state(mqtt_client, state, confidence, data, time.time())
 
         time.sleep(READ_INTERVAL)
 

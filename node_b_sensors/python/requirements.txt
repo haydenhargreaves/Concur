@@ -1,4 +1,2 @@
-# Python dependencies for the node_b_sensors Linux-side app.
-# arduino.app_utils ships with the UNO Q runtime image and does not need to
-# be listed here. Add packages below as the app grows (e.g. paho-mqtt once
-# this node starts publishing to the broker).
+paho-mqtt
+python-dotenv
