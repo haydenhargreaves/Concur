@@ -4,14 +4,12 @@ import json
 from arduino.app_utils import App, Bridge
 
 from classifier import classify_node_b
+from rabbit import connect, send
 
+READ_INTERVAL = 0.5
+TOPIC = "sensors/node_b/state"
 
-# =====================================================
-# Configuration
-# =====================================================
-
-READ_INTERVAL = 1.0
-
+mqtt_client = connect("node_b_sensors")
 
 # =====================================================
 # Read sensors from Arduino MCU
@@ -131,6 +129,20 @@ def loop():
         print(f"Confidence : {confidence:.2f}")
 
         print("----------------------------------------")
+
+        # ---------------------------------------------
+        # 5. Publish to MQTT for the fusion dashboard
+        # ---------------------------------------------
+
+        payload = json.dumps(
+            {
+                "state": state,
+                "confidence": confidence,
+                "raw": data,
+                "timestamp": time.time(),
+            }
+        )
+        send(mqtt_client, TOPIC, payload)
 
         time.sleep(READ_INTERVAL)
 

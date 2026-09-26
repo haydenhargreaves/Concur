@@ -1,18 +1,14 @@
 import math
 
-
-# =====================================================
-# Local Classification States
-# =====================================================
-
 IDLE = 0
 ACTIVE_PRESENCE = 1
 ABNORMAL_DISTURBANCE = 2
 
-
-# =====================================================
-# Node B Local Classifier
-# =====================================================
+# An object/person near the sensor also shadows the co-located light
+# sensor, so low lux corroborates a distance-based ACTIVE_PRESENCE read.
+# Placeholder threshold - calibrate against real readings once available.
+LIGHT_PRESENCE_LUX_THRESHOLD = 50
+LIGHT_PRESENCE_CONFIDENCE_BOOST = 0.05
 
 def classify_node_b(data):
 
@@ -57,6 +53,11 @@ def classify_node_b(data):
             0.5,
             1.0 - (distance / 1600.0)
         )
+
+        light_ok = data.get("light_ok", False)
+        light_lux = data.get("light_lux", -1)
+        if light_ok and 0 <= light_lux < LIGHT_PRESENCE_LUX_THRESHOLD:
+            confidence = min(0.99, confidence + LIGHT_PRESENCE_CONFIDENCE_BOOST)
 
         return ACTIVE_PRESENCE, round(confidence, 2)
 
