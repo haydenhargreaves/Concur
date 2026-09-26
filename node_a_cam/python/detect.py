@@ -73,4 +73,4 @@ def process_detection(detections: dict[str, list[DetectionObject]], *, conn):
 
             # Print the bounding box data directly to the console
             print(entry)
-            send(conn, "concur/node_a/detections", dumps(entry))
+            send(conn, "sensors/node_a/state", dumps(entry))
