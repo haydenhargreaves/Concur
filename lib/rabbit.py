@@ -58,7 +58,9 @@ def send(conn: mqtt.Client, topic: str, payload: str):
     print(f"[MQTT] Publishing to '{topic}': {payload}")
     result = conn.publish(topic, payload, qos=1)
     if result.rc != mqtt.MQTT_ERR_SUCCESS:
-        print(f"[MQTT] Publish call failed: rc={result.rc} ({mqtt.error_string(result.rc)})")
+        print(
+            f"[MQTT] Publish call failed: rc={result.rc} ({mqtt.error_string(result.rc)})"
+        )
 
 
 def close(conn: mqtt.Client):
