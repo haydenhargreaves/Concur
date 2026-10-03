@@ -136,10 +136,14 @@ def loop():
 
         payload = json.dumps(
             {
+                "version": 1,
+                "node": "node_b",
+                "timestamp": int(time.time()),
                 "state": state,
+                # Node B does not classify direction yet.
+                "direction": 2,
                 "confidence": confidence,
-                "raw": data,
-                "timestamp": time.time(),
+                "health": "HEALTHY",
             }
         )
         send(mqtt_client, TOPIC, payload)

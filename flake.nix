@@ -19,6 +19,8 @@
           packages = with pkgs; [
             python3
             python3Packages.paho-mqtt
+            python3Packages.pandas
+            python3Packages.streamlit
             # Add packages here...
           ];
 

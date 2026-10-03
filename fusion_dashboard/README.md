@@ -14,23 +14,29 @@ In the sidebar, fill in the broker host, port, credentials, and the two
 topic names, then click **Connect**. Node B publishes to `sensors/node_b/state`
 via the shared `lib/rabbit.py` (see `node_b_sensors/python/main.py`).
 
-Each node's published JSON payload is expected to look like:
+Node A publishes this JSON packet shape. Node B should publish the same
+top-level fields so the dashboard can display both nodes consistently:
 
 ```json
 {
+  "version": 1,
+  "node": "node_a",
   "state": 0,
+  "direction": 2,
   "confidence": 0.92,
-  "raw": { "...": "whatever sensor fields the node reports" },
-  "timestamp": 1732000000.0
+  "timestamp": 1732000000,
+  "health": "HEALTHY"
 }
 ```
 
 where `state` is `0` (Idle) / `1` (Active Presence) / `2` (Abnormal
-Disturbance) 
+Disturbance). Node A uses `direction` values `0` (Approaching), `1` (Moving
+away), and `2` (N/A); Node B may use a direction value appropriate to its
+classifier.
 
-If the real payloads end up shaped differently, translate them in
-`MqttDataSource._on_message` in `data_source.py` rather than changing
-`app.py` or `fusion.py` - both only depend on the dict shape above.
+`fusion.py` only requires `state` and `confidence`. If Node B needs a
+different transport payload temporarily, translate it in
+`MqttDataSource._on_message` in `data_source.py`.
 
 
 ## Layout
