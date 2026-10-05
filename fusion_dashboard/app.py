@@ -14,6 +14,13 @@ from states import STATE_ABNORMAL_DISTURBANCE, STATE_ACTIVE_PRESENCE, STATE_IDLE
 
 HISTORY_LIMIT = 100
 
+DIRECTION_LABELS = {
+    0: "Approaching",
+    1: "Moving away",
+    # Node B can use any direction value appropriate to its own classifier.
+    2: "N/A",
+}
+
 st.set_page_config(page_title="Concur - Sensor Fusion Dashboard", layout="wide")
 
 if "history" not in st.session_state:
@@ -46,8 +53,13 @@ def render_node_panel(container, title, reading_):
     container.metric("Confidence", f"{reading_['confidence']:.0%}")
     container.progress(reading_["confidence"])
 
-    with container.expander("Raw sensor data"):
-        st.json(reading_["raw"])
+    container.caption(
+        f"Direction: {DIRECTION_LABELS.get(reading_['direction'], reading_['direction'])}"
+    )
+    container.caption(f"Health: {reading_['health']}")
+
+    with container.expander("Packet data"):
+        st.json(reading_)
 
     container.caption(
         f"Last updated: {time.strftime('%H:%M:%S', time.localtime(reading_['timestamp']))}"
