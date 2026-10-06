@@ -116,7 +116,7 @@ def loop():
         # 3. Local classification
         # ---------------------------------------------
 
-        state, confidence = classify_node_b(data)
+        state, confidence, direction = classify_node_b(data)
 
         # ---------------------------------------------
         # 4. Print classification result
@@ -126,6 +126,7 @@ def loop():
         print("LOCAL CLASSIFICATION")
 
         print(f"State      : {state}")
+        print(f"Direction  : {direction}")
         print(f"Confidence : {confidence:.2f}")
 
         print("----------------------------------------")
@@ -140,8 +141,7 @@ def loop():
                 "node": "node_b",
                 "timestamp": int(time.time()),
                 "state": state,
-                # Node B does not classify direction yet.
-                "direction": 2,
+                "direction": direction,
                 "confidence": confidence,
                 "health": "HEALTHY",
             }

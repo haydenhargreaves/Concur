@@ -53,10 +53,10 @@ def render_node_panel(container, title, reading_):
     container.metric("Confidence", f"{reading_['confidence']:.0%}")
     container.progress(reading_["confidence"])
 
-    container.caption(
-        f"Direction: {DIRECTION_LABELS.get(reading_['direction'], reading_['direction'])}"
-    )
-    container.caption(f"Health: {reading_['health']}")
+    direction = reading_.get("direction")
+    direction_label = DIRECTION_LABELS.get(direction, direction if direction is not None else "N/A")
+    container.caption(f"Direction: {direction_label}")
+    container.caption(f"Health: {reading_.get('health', 'UNKNOWN')}")
 
     with container.expander("Packet data"):
         st.json(reading_)
