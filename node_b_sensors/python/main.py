@@ -87,6 +87,11 @@ def print_sensor_data(data):
         f"Light={data['light_ok']}"
     )
 
+    print(
+    f"Peak motion delta: "
+    f"{data.get('peak_motion_delta', 0.0):.3f} g"
+)
+
 
 # =====================================================
 # Main Loop

@@ -19,6 +19,8 @@ DIRECTION_MIN_SAMPLES = 3
 # Minimum rate of change (mm/s) to call it a trend rather than sensor noise.
 DIRECTION_RATE_MM_PER_SEC = 40.0
 
+MOTION_DELTA_THRESHOLD = 0.05
+
 
 class DistanceDirectionTracker:
     """Infers approach/away direction from the trend in distance_mm over time."""
@@ -81,8 +83,12 @@ def classify_node_b(data):
         ax**2 + ay**2 + az**2
     )
 
-    # Assuming accelerometer values are in g
-    motion_delta = abs(acceleration_magnitude - 1.0)
+    # Assuming accelerometer values are in g. peak_motion_delta (if the sketch
+    # reports it) covers brief knocks that decay faster than our 2Hz poll -
+    # the instantaneous reading alone would only catch a shock that happens
+    # to land right on a poll.
+    instantaneous_delta = abs(acceleration_magnitude - 1.0)
+    motion_delta = max(instantaneous_delta, data.get("peak_motion_delta", 0.0))
 
     # -------------------------------------------------
     # STATE 2: ABNORMAL DISTURBANCE
@@ -91,7 +97,7 @@ def classify_node_b(data):
     # movement_ok guards against a disconnected/uninitialized Movement sensor:
     # the sketch leaves accel at (0, 0, 0) in that case, which reads as a 1.0g
     # drop from gravity and would otherwise look like a permanent disturbance.
-    if movement_ok and motion_delta > 0.8:
+    if movement_ok and motion_delta > MOTION_DELTA_THRESHOLD:
         return ABNORMAL_DISTURBANCE, 0.95, direction
 
     # -------------------------------------------------
