@@ -68,6 +68,7 @@ def classify_node_b(data):
     distance = data.get("distance_mm", -1)
     direction = _direction_tracker.update(distance, data.get("distance_ok", False))
 
+    movement_ok = data.get("movement_ok", False)
     ax = data.get("accel_x", 0)
     ay = data.get("accel_y", 0)
     az = data.get("accel_z", 0)
@@ -87,7 +88,10 @@ def classify_node_b(data):
     # STATE 2: ABNORMAL DISTURBANCE
     # -------------------------------------------------
 
-    if motion_delta > 0.8:
+    # movement_ok guards against a disconnected/uninitialized Movement sensor:
+    # the sketch leaves accel at (0, 0, 0) in that case, which reads as a 1.0g
+    # drop from gravity and would otherwise look like a permanent disturbance.
+    if movement_ok and motion_delta > 0.8:
         return ABNORMAL_DISTURBANCE, 0.95, direction
 
     # -------------------------------------------------
