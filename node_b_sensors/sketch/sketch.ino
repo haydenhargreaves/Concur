@@ -18,6 +18,7 @@ unsigned long lastDistanceUpdate = 0;
 float current_accelX = 0, current_accelY = 0, current_accelZ = 0;
 float current_gyroX = 0, current_gyroY = 0, current_gyroZ = 0;
 int current_lightLux = -1, current_lightRaw = -1, current_lightIR = -1;
+float peak_motion_delta = 0;
 
 // =====================================================
 // Function called from Python through Bridge
@@ -38,8 +39,11 @@ String readSensors()
   data += "\"light_ir\":" + String(current_lightIR) + ",";
   data += "\"distance_ok\":" + String(distanceOK ? "true" : "false") + ",";
   data += "\"movement_ok\":" + String(movementOK ? "true" : "false") + ",";
-  data += "\"light_ok\":" + String(lightOK ? "true" : "false");
+  data += "\"light_ok\":" + String(lightOK ? "true" : "false") + ",";
+  data += "\"peak_motion_delta\":" + String(peak_motion_delta, 3);
   data += "}";
+
+  peak_motion_delta = 0;
 
   return data;
 }
@@ -92,6 +96,18 @@ void loop()
     current_gyroX = movementSensor.getRoll();
     current_gyroY = movementSensor.getPitch();
     current_gyroZ = movementSensor.getYaw();
+
+    float magnitude = sqrt(
+        current_accelX * current_accelX +
+        current_accelY * current_accelY +
+        current_accelZ * current_accelZ);
+    float delta = magnitude - 1.0;
+    if (delta < 0) delta = -delta;
+    if (delta > peak_motion_delta)
+    {
+      peak_motion_delta = delta;
+      Serial.println(peak_motion_delta);
+    }
   }
 
   lightSensor.update();
