@@ -1,0 +1,9 @@
+**/__pycache__/
+**/*.pyc
+**/.venv/
+.git
+.github
+node_a_cam
+node_b_sensors/sketch
+node_b_sensors/deploy.sh
+lib/.env
