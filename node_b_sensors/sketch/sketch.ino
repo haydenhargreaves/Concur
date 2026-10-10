@@ -20,6 +20,39 @@ float current_gyroX = 0, current_gyroY = 0, current_gyroZ = 0;
 int current_lightLux = -1, current_lightRaw = -1, current_lightIR = -1;
 float peak_motion_delta = 0;
 
+const int STATE_IDLE = 0;
+const int STATE_ACTIVE_PRESENCE = 1;
+const int STATE_ABNORMAL_DISTURBANCE = 2;
+
+const int LED_ON = LOW;
+const int LED_OFF = HIGH;
+
+
+void setStatusLed(int state)
+{
+  switch (state)
+  {
+    case STATE_ACTIVE_PRESENCE:
+      digitalWrite(LED3_R, LED_OFF);
+      digitalWrite(LED3_G, LED_ON);
+      digitalWrite(LED3_B, LED_OFF);
+      break;
+
+    case STATE_ABNORMAL_DISTURBANCE:
+      digitalWrite(LED3_R, LED_ON);
+      digitalWrite(LED3_G, LED_OFF);
+      digitalWrite(LED3_B, LED_OFF);
+      break;
+
+    case STATE_IDLE:
+    default:
+      digitalWrite(LED3_R, LED_OFF);
+      digitalWrite(LED3_G, LED_OFF);
+      digitalWrite(LED3_B, LED_OFF);
+      break;
+  }
+}
+
 // =====================================================
 // Function called from Python through Bridge
 // =====================================================
@@ -61,8 +94,14 @@ void setup()
   movementOK = movementSensor.begin();
   lightOK = lightSensor.begin();
 
+  pinMode(LED3_R, OUTPUT);
+  pinMode(LED3_G, OUTPUT);
+  pinMode(LED3_B, OUTPUT);
+  setStatusLed(STATE_IDLE);
+
   Bridge.begin();
   Bridge.provide("read_sensors", readSensors);
+  Bridge.provide("set_led", setStatusLed);
 }
 
 // =====================================================
