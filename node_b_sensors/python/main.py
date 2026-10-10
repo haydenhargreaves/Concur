@@ -137,7 +137,16 @@ def loop():
         print("----------------------------------------")
 
         # ---------------------------------------------
-        # 5. Publish to MQTT for the fusion dashboard
+        # 5. Reflect the decision on the board's onboard LED
+        # ---------------------------------------------
+
+        try:
+            Bridge.call("set_led", state)
+        except Exception as e:
+            print(f"[ERROR] Bridge communication failed: {e}")
+
+        # ---------------------------------------------
+        # 6. Publish to MQTT for the fusion dashboard
         # ---------------------------------------------
 
         payload = json.dumps(

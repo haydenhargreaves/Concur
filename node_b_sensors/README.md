@@ -51,6 +51,19 @@ cp lib/.env.example lib/.env
 `lib/.env` is gitignored - it never gets committed, but `deploy.sh`/`scp`
 still copies it onto the board since that's a plain filesystem copy.
 
+## Onboard status LED
+
+Each loop iteration, `main.py` sends the local classification result to the
+sketch over Bridge (`Bridge.call("set_led", state)`), which lights the
+board's onboard RGB LED (LED3, active-low) to match the state:
+
+- Green = `ACTIVE_PRESENCE`
+- Red = `ABNORMAL_DISTURBANCE`
+- Off = `IDLE`
+
+This mirrors the "local decision" indicator in the system diagram, straight
+off the board itself rather than through the fusion dashboard.
+
 ## Publishing to the fusion dashboard
 
 `main.py` publishes each classification result to the `sensors/node_b/state`

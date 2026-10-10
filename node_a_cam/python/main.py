@@ -2,13 +2,15 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
-from arduino.app_utils import App
+from arduino.app_utils import App, Leds
 from arduino.app_bricks.video_objectdetection import VideoObjectDetection
 
 from detect import process_detection
 from rabbit import connect
 
 conn = connect("node_a")
+
+Leds.set_led1_color(0, 0, 0)
 
 
 def on_detection(detections):

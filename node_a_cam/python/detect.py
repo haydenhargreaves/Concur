@@ -4,7 +4,20 @@ from math import hypot, log
 from statistics import median
 from time import monotonic, time
 from typing import TypedDict, override
+
+from arduino.app_utils import Leds
+
 from rabbit import send
+
+STATE_LED_COLORS = {
+    0: (0, 0, 0),  # idle -> off
+    1: (0, 1, 0),  # active presence -> green
+    2: (1, 0, 0),  # abnormal disturbance -> red
+}
+
+
+def _set_status_led(state: int | None) -> None:
+    Leds.set_led1_color(*STATE_LED_COLORS.get(state, (0, 0, 0)))
 
 
 class DetectionObject(TypedDict):
@@ -212,6 +225,7 @@ def process_detection(
         for obj in class_objects
     ]
     if not objects:
+        _set_status_led(None)
         return None
 
     # The application assumes one person; use the strongest box if the detector emits duplicates.
@@ -221,6 +235,7 @@ def process_detection(
 
     decision = motion_classifier.observe(Detection(bbox, model_confidence), monotonic())
     if decision is None:
+        _set_status_led(None)
         return None
 
     packet: NodeAPacket = {
@@ -230,6 +245,8 @@ def process_detection(
         **decision,
         "health": "HEALTHY",
     }
+
+    _set_status_led(packet["state"])
 
     print(dumps(packet))
     send(conn, "sensors/node_a/state", dumps(packet))
