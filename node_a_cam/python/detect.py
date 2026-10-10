@@ -2,6 +2,7 @@ from collections import deque
 from json import dumps
 from math import hypot, log
 from statistics import median
+from threading import Lock
 from time import monotonic, time
 from typing import TypedDict, override
 
@@ -14,6 +15,8 @@ STATE_LED_COLORS = {
     1: (0, 1, 0),  # active presence -> green
     2: (1, 0, 0),  # abnormal disturbance -> red
 }
+
+TOPIC = "sensors/node_a/state"
 
 
 def _set_status_led(state: int | None) -> None:
@@ -46,6 +49,13 @@ class NodeAPacket(MotionDecision):
     node: str
     timestamp: int
     health: str
+
+
+IDLE_DECISION: MotionDecision = {
+    "state": 0,
+    "direction": 2,
+    "confidence": 0.90,
+}
 
 
 class MotionClassifier:
@@ -210,6 +220,36 @@ class Detection:
 
 
 motion_classifier = MotionClassifier()
+_heartbeat_lock = Lock()
+_person_seen_since_heartbeat = False
+
+
+def _publish_packet(conn, decision: MotionDecision) -> NodeAPacket:
+    packet: NodeAPacket = {
+        "version": 1,
+        "node": "node_a",
+        "timestamp": int(time()),
+        **decision,
+        "health": "HEALTHY",
+    }
+    _set_status_led(packet["state"])
+    print(dumps(packet))
+    send(conn, TOPIC, dumps(packet))
+    return packet
+
+
+def publish_heartbeat(conn) -> NodeAPacket | None:
+    """Publish an idle result when the camera saw no person this interval."""
+    global _person_seen_since_heartbeat
+
+    with _heartbeat_lock:
+        person_seen = _person_seen_since_heartbeat
+        _person_seen_since_heartbeat = False
+
+    if person_seen:
+        return None
+
+    return _publish_packet(conn, IDLE_DECISION)
 
 
 def process_detection(
@@ -228,6 +268,10 @@ def process_detection(
         _set_status_led(None)
         return None
 
+    global _person_seen_since_heartbeat
+    with _heartbeat_lock:
+        _person_seen_since_heartbeat = True
+
     # The application assumes one person; use the strongest box if the detector emits duplicates.
     obj = max(objects, key=lambda item: item["confidence"])
     bbox = obj["bounding_box_xyxy"]
@@ -238,16 +282,4 @@ def process_detection(
         _set_status_led(None)
         return None
 
-    packet: NodeAPacket = {
-        "version": 1,
-        "node": "node_a",
-        "timestamp": int(time()),
-        **decision,
-        "health": "HEALTHY",
-    }
-
-    _set_status_led(packet["state"])
-
-    print(dumps(packet))
-    send(conn, "sensors/node_a/state", dumps(packet))
-    return packet
+    return _publish_packet(conn, decision)
