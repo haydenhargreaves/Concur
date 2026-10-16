@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
+import traceback
 from threading import Event, Thread
 
 from arduino.app_utils import App, Leds
@@ -23,7 +24,10 @@ def on_detection(detections):
 
 def heartbeat_loop(stop_event: Event) -> None:
     while not stop_event.wait(HEARTBEAT_INTERVAL_SECONDS):
-        publish_heartbeat(conn)
+        try:
+            publish_heartbeat(conn)
+        except Exception:
+            traceback.print_exc()
 
 
 detection_stream = VideoObjectDetection(confidence=0.5, debounce_sec=0.0)

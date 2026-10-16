@@ -13,6 +13,9 @@ from fusion import fuse
 from states import STATE_ABNORMAL_DISTURBANCE, STATE_ACTIVE_PRESENCE, STATE_IDLE, STATE_LABELS
 
 HISTORY_LIMIT = 100
+FUSED_COLOR = "#ff6b35"
+# Node A pulses every 0.5s; Node B's cadence is unknown, so keep some slack.
+STALE_AFTER_SECONDS = 5
 
 DIRECTION_LABELS = {
     0: "Approaching",
@@ -22,6 +25,25 @@ DIRECTION_LABELS = {
 }
 
 st.set_page_config(page_title="Concur - Sensor Fusion Dashboard", layout="wide")
+
+# Streamlit sizes most text in rem, so raising the root size scales the whole UI.
+st.markdown(
+    """
+    <style>
+    html { font-size: 112.5%; }
+    .block-container { padding-top: 2rem; }
+    .block-container h1 { padding-top: 0; }
+    [data-testid="stSidebarHeader"] {
+        height: 2.75rem; min-height: 0;
+        padding: 0.75rem 1.25rem 0 0;
+        display: flex; justify-content: flex-end; align-items: center;
+    }
+    [data-testid="stSidebarUserContent"] { padding-top: 1rem; }
+    [data-testid="stSidebar"] h2 { padding-top: 0; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -43,10 +65,39 @@ def render_state_badge(container, state):
         container.error(label, icon="\U0001f6a8")
 
 
-def render_node_panel(container, title, reading_):
+def is_stale(reading_, now):
+    received_at = reading_.get("received_at") if reading_ else None
+    return received_at is not None and now - received_at > STALE_AFTER_SECONDS
+
+
+def is_faulted(reading_):
+    return reading_ is not None and reading_.get("health", "HEALTHY") != "HEALTHY"
+
+
+def is_down(reading_, now):
+    return is_stale(reading_, now) or is_faulted(reading_)
+
+
+def render_node_panel(container, title, reading_, now):
     container.subheader(title)
     if reading_ is None:
         container.info("No data yet.")
+        return
+
+    if is_stale(reading_, now):
+        container.error(
+            f"OFFLINE - no packets for {now - reading_['received_at']:.0f}s", icon="🔌"
+        )
+        container.caption(
+            f"Last packet at {time.strftime('%H:%M:%S', time.localtime(reading_['received_at']))}"
+        )
+        return
+
+    if is_faulted(reading_):
+        container.error(f"FAULT - {reading_['health']}", icon="⚠️")
+        container.caption(
+            f"Last updated: {time.strftime('%H:%M:%S', time.localtime(reading_['timestamp']))}"
+        )
         return
 
     render_state_badge(container, reading_["state"])
@@ -73,14 +124,17 @@ def render_dashboard_body(source):
 
     reading = source.get_latest() if source is not None else {"node_a": None, "node_b": None}
     node_a, node_b = reading.get("node_a"), reading.get("node_b")
-    fused = fuse(node_a, node_b)
 
     now = time.time()
+    live_a = None if is_down(node_a, now) else node_a
+    live_b = None if is_down(node_b, now) else node_b
+    fused = fuse(live_a, live_b)
+
     st.session_state.history.append(
         {
             "time": pd.to_datetime(now, unit="s"),
-            "Node A": node_a["confidence"] if node_a else None,
-            "Node B": node_b["confidence"] if node_b else None,
+            "Node A": live_a["confidence"] if live_a else None,
+            "Node B": live_b["confidence"] if live_b else None,
             "Fused": fused["confidence"],
         }
     )
@@ -100,8 +154,10 @@ def render_dashboard_body(source):
     # Header
     # -------------------------------------------------------------------
 
-    st.title("Concur - Sensor Fusion Dashboard")
-    st.caption(f"LIVE MQTT — last updated {time.strftime('%H:%M:%S', time.localtime(now))}")
+    st.markdown(
+        f'# <span style="color:{FUSED_COLOR}">Concur</span> - Sensor Fusion Dashboard',
+        unsafe_allow_html=True,
+    )
 
     # -------------------------------------------------------------------
     # Node A / Node B / Fused panels
@@ -109,8 +165,8 @@ def render_dashboard_body(source):
 
     col_a, col_b, col_fused = st.columns(3)
 
-    render_node_panel(col_a, "Node A", node_a)
-    render_node_panel(col_b, "Node B", node_b)
+    render_node_panel(col_a, "Node A", node_a, now)
+    render_node_panel(col_b, "Node B", node_b, now)
 
     col_fused.subheader("Final Decision")
     if fused["state"] is None:
@@ -134,7 +190,11 @@ def render_dashboard_body(source):
 
     st.subheader("Confidence over time")
     history_df = pd.DataFrame(st.session_state.history).set_index("time")
-    st.line_chart(history_df, height=280)
+    st.line_chart(
+        history_df,
+        height=420,
+        color=["#5b8def", "#2ca58d", FUSED_COLOR],  # Node A, Node B, Fused
+    )
 
     st.subheader("Recent fused state changes")
     if st.session_state.events:
@@ -152,23 +212,19 @@ def render_dashboard_body(source):
 # ---------------------------------------------------------------------------
 
 st.sidebar.header("Data source")
-host = st.sidebar.text_input("Broker host", DEFAULT_HOST)
-port = st.sidebar.number_input("Port", value=DEFAULT_PORT, step=1)
 username = st.sidebar.text_input("Username", "")
 password = st.sidebar.text_input("Password", "", type="password")
-topic_a = st.sidebar.text_input("Node A topic", DEFAULT_TOPIC_NODE_A)
-topic_b = st.sidebar.text_input("Node B topic", DEFAULT_TOPIC_NODE_B)
 
 if st.sidebar.button("Connect"):
     if st.session_state.mqtt_source is not None:
         st.session_state.mqtt_source.close()
     st.session_state.mqtt_source = MqttDataSource(
-        host=host,
-        port=int(port),
+        host=DEFAULT_HOST,
+        port=DEFAULT_PORT,
         username=username,
         password=password,
-        topic_node_a=topic_a,
-        topic_node_b=topic_b,
+        topic_node_a=DEFAULT_TOPIC_NODE_A,
+        topic_node_b=DEFAULT_TOPIC_NODE_B,
     )
 
 source = st.session_state.mqtt_source
@@ -183,7 +239,7 @@ else:
 
 st.sidebar.divider()
 auto_refresh = st.sidebar.checkbox("Auto-refresh", value=True)
-refresh_interval = st.sidebar.slider("Refresh interval (s)", 1, 10, 2)
+refresh_interval = st.sidebar.slider("Refresh interval (s)", 1, 10, 1)
 st.sidebar.button("Refresh now")
 
 

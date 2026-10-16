@@ -1,4 +1,5 @@
 from collections import deque
+from glob import glob
 from json import dumps
 from math import hypot, log
 from statistics import median
@@ -18,9 +19,16 @@ STATE_LED_COLORS = {
 
 TOPIC = "sensors/node_a/state"
 
+CAMERA_FAULT_LED = (0, 0, 1)  # blue
+CAMERA_DEVICE_GLOB = "/dev/v4l/by-id/*-video-index0"
+
 
 def _set_status_led(state: int | None) -> None:
     Leds.set_led1_color(*STATE_LED_COLORS.get(state, (0, 0, 0)))
+
+
+def _camera_present() -> bool:
+    return bool(glob(CAMERA_DEVICE_GLOB))
 
 
 class DetectionObject(TypedDict):
@@ -224,15 +232,20 @@ _heartbeat_lock = Lock()
 _person_seen_since_heartbeat = False
 
 
-def _publish_packet(conn, decision: MotionDecision) -> NodeAPacket:
+def _publish_packet(
+    conn, decision: MotionDecision, health: str = "HEALTHY"
+) -> NodeAPacket:
     packet: NodeAPacket = {
         "version": 1,
         "node": "node_a",
         "timestamp": int(time()),
         **decision,
-        "health": "HEALTHY",
+        "health": health,
     }
-    _set_status_led(packet["state"])
+    if health == "HEALTHY":
+        _set_status_led(packet["state"])
+    else:
+        Leds.set_led1_color(*CAMERA_FAULT_LED)
     print(dumps(packet))
     send(conn, TOPIC, dumps(packet))
     return packet
@@ -245,6 +258,13 @@ def publish_heartbeat(conn) -> NodeAPacket | None:
     with _heartbeat_lock:
         person_seen = _person_seen_since_heartbeat
         _person_seen_since_heartbeat = False
+
+    if not _camera_present():
+        return _publish_packet(
+            conn,
+            {"state": 0, "direction": 2, "confidence": 0.0},
+            health="CAMERA_OFFLINE",
+        )
 
     if person_seen:
         return None
