@@ -9,6 +9,7 @@ MQTT-backed data source for the fusion dashboard.
 
 import json
 import threading
+import time
 
 DEFAULT_HOST = "ddns.gophernest.net"
 DEFAULT_PORT = 3100
@@ -83,6 +84,8 @@ class MqttDataSource(DataSource):
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"[MQTT] Failed to parse payload on '{msg.topic}': {e}")
             return
+
+        payload["received_at"] = time.time()
 
         with self._lock:
             if msg.topic == self._topic_node_a:
