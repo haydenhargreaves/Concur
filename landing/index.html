@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concur — Two senses. One verdict.</title>
+<meta name="description" content="Concur fuses a vision node and a physical-sensor node at the edge into one trusted reading of presence and disturbance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070d; --bg2:#0a0f1c; --panel:rgba(14,22,40,.62); --line:rgba(120,170,255,.16);
+  --text:#e8eefc; --muted:#8c9ab8; --accent:#37e6ff; --accent2:#8b6bff; --green:#3dff9a; --red:#ff4d6d; --amber:#ffd166;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace; --sans:'Space Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth;background:var(--bg)}
+body{font-family:var(--sans);color:var(--text);background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(ellipse at 50% 0%,rgba(55,230,255,.08),transparent 60%),
+  radial-gradient(ellipse at 100% 100%,rgba(139,107,255,.10),transparent 55%),
+  radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.65))}
+
+/* progress + nav */
+#progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:50;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 12px var(--accent)}
+header.top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:18px 32px;font-family:var(--mono);font-size:16px;letter-spacing:.18em;color:var(--muted);pointer-events:none}
+header.top b{color:var(--text);letter-spacing:.3em}
+header.top .hint{display:flex;gap:6px;align-items:center;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+header.top .hint b{font-weight:500}
+kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;padding:2px 6px;font-size:16px;color:var(--text);background:rgba(255,255,255,.04)}
+#dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:12px}
+#dots a{width:8px;height:8px;border-radius:50%;border:1px solid var(--muted);display:block;transition:.3s;position:relative}
+#dots a.on{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--accent);transform:scale(1.3)}
+#dots a span{position:absolute;right:18px;top:50%;transform:translateY(-50%);font:16px var(--mono);color:var(--muted);white-space:nowrap;opacity:0;transition:.2s;pointer-events:none}
+#dots a:hover span{opacity:1}
+#counter{position:fixed;left:32px;bottom:22px;z-index:40;font:15px var(--mono);color:var(--muted);letter-spacing:.2em}
+#counter b{color:var(--accent)}
+
+/* slides */
+section.slide{position:relative;z-index:5;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;padding:88px max(36px,6vw) 72px}
+.eyebrow{font:500 16px var(--mono);letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+h1,h2{font-weight:500;letter-spacing:-.03em;line-height:1.02}
+h2{font-size:clamp(44px,6.4vw,92px);max-width:17ch}
+h2 em,h1 em{font-style:normal;background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+p.lead{margin-top:24px;font-size:clamp(20px,2vw,30px);line-height:1.55;color:var(--muted);max-width:60ch;font-weight:300}
+p.lead strong{color:var(--text);font-weight:500}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.slide.in .rv{opacity:1;transform:none}
+.slide.in .rv:nth-child(2){transition-delay:.08s}.slide.in .rv:nth-child(3){transition-delay:.16s}
+.slide.in .rv:nth-child(4){transition-delay:.24s}.slide.in .rv:nth-child(5){transition-delay:.32s}
+.slide.in .rv:nth-child(6){transition-delay:.4s}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px;backdrop-filter:blur(14px);position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(55,230,255,.07),transparent 40%);pointer-events:none}
+.grid{display:grid;gap:22px;margin-top:36px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card h3{font-weight:500;font-size:30px;margin:10px 0 8px;letter-spacing:-.01em}
+.card p{color:var(--muted);font-size:21px;line-height:1.55;font-weight:300}
+.tag{font:15px var(--mono);letter-spacing:.2em;color:var(--accent);text-transform:uppercase}
+.big{font:300 clamp(52px,6.4vw,96px)/1 var(--sans);letter-spacing:-.04em}
+.mono{font-family:var(--mono)}
+
+/* hero */
+#s0{align-items:flex-start}
+.logo{font:700 17px var(--mono);letter-spacing:.5em;color:var(--accent);display:flex;align-items:center;gap:14px;margin-bottom:34px}
+.logo i{width:30px;height:30px;border:1px solid var(--accent);border-radius:50%;position:relative;box-shadow:0 0 18px rgba(55,230,255,.5),inset 0 0 12px rgba(55,230,255,.3)}
+.logo i::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{50%{transform:scale(.4);opacity:.5}}
+h1{font-size:clamp(64px,11vw,176px);font-weight:300;max-width:12ch}
+h1 span{display:block}
+.cta{margin-top:44px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{font:500 17px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:15px 26px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;cursor:pointer;background:transparent;transition:.25s}
+.btn.solid{background:var(--accent);color:#05070d;box-shadow:0 0 28px rgba(55,230,255,.4)}
+.btn:hover{box-shadow:0 0 32px rgba(55,230,255,.55);transform:translateY(-2px)}
+.stats{display:flex;gap:64px;margin-top:64px;flex-wrap:wrap}
+.stats div b{display:block;font:300 56px var(--sans);letter-spacing:-.03em}
+.stats div span{font:17px var(--mono);letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+
+/* problem */
+.vs .card{min-height:200px}
+.x{color:var(--red)}.ok{color:var(--green)}
+
+/* architecture */
+.arch{margin-top:30px;width:100%;max-width:1400px}
+.arch svg{width:100%;height:auto;overflow:visible}
+.arch text{font-family:var(--mono)}
+.flow{stroke-dasharray:6 8;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-28}}
+
+/* split */
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center}
+ul.chk{list-style:none;margin-top:28px;display:grid;gap:18px}
+ul.chk li{font-size:23px;color:var(--muted);padding-left:38px;position:relative;line-height:1.45;font-weight:300}
+ul.chk li b{color:var(--text);font-weight:500}
+ul.chk li::before{content:"";position:absolute;left:0;top:7px;width:14px;height:14px;border:1px solid var(--accent);border-radius:3px;transform:rotate(45deg) scale(.7);box-shadow:0 0 8px rgba(55,230,255,.5)}
+.viewfinder{aspect-ratio:4/3;border-radius:14px;position:relative;background:linear-gradient(160deg,#0b1424,#070b14);border:1px solid var(--line);overflow:hidden}
+.viewfinder::before,.viewfinder::after{content:"";position:absolute;width:26px;height:26px;border:2px solid var(--accent)}
+.viewfinder::before{top:12px;left:12px;border-right:0;border-bottom:0}.viewfinder::after{bottom:12px;right:12px;border-left:0;border-top:0}
+.bbox{position:absolute;border:2px solid var(--green);box-shadow:0 0 18px rgba(61,255,154,.5);animation:walk 7s ease-in-out infinite alternate;border-radius:4px}
+.bbox span{position:absolute;top:-22px;left:-2px;background:var(--green);color:#021;font:700 16px var(--mono);padding:2px 7px;border-radius:3px;white-space:nowrap}
+@keyframes walk{from{left:12%;top:28%;width:22%;height:48%}to{left:58%;top:22%;width:30%;height:62%}}
+.vf-hud{position:absolute;left:14px;bottom:14px;font:15px var(--mono);color:var(--accent);letter-spacing:.14em;line-height:1.7}
+.rec{position:absolute;right:16px;top:16px;font:15px var(--mono);color:var(--red);letter-spacing:.2em}
+.rec::before{content:"● ";animation:blink 1s infinite}@keyframes blink{50%{opacity:0}}
+
+.sensor{display:grid;gap:14px}
+.meter{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.meter .row{display:flex;justify-content:space-between;font:15px var(--mono);letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.meter .row b{color:var(--text);font-weight:500}
+.bar{height:6px;background:rgba(255,255,255,.07);border-radius:6px;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+
+/* states */
+.state{text-align:left}
+.orb{width:68px;height:68px;border-radius:50%;margin-bottom:14px;position:relative}
+.orb.s0{background:#222a3a;box-shadow:inset 0 0 0 1px #3a4660}
+.orb.s1{background:var(--green);box-shadow:0 0 34px var(--green);animation:glow 2.4s infinite}
+.orb.s2{background:var(--red);box-shadow:0 0 34px var(--red);animation:glow 1s infinite}
+@keyframes glow{50%{filter:brightness(.6)}}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:18px;margin-top:38px;align-items:stretch}
+.seg{display:grid;gap:8px;margin-top:14px}
+.seg button{font:500 18px var(--mono);letter-spacing:.06em;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;transition:.2s}
+.seg button:hover{border-color:var(--accent);color:var(--text)}
+.seg button.on{border-color:var(--accent);color:var(--text);background:rgba(55,230,255,.1);box-shadow:0 0 18px rgba(55,230,255,.18)}
+.range{margin-top:16px;font:15px var(--mono);color:var(--muted);letter-spacing:.14em}
+.range input{width:100%;accent-color:var(--accent);margin-top:8px}
+.out{display:flex;flex-direction:column;justify-content:center;text-align:center;border-color:rgba(55,230,255,.4);box-shadow:0 0 50px rgba(55,230,255,.08)}
+.out .orb{margin:0 auto 16px;width:78px;height:78px;transition:.4s}
+.out .orb.off{background:#222a3a;box-shadow:none;animation:none}
+.out .verdict{font:300 clamp(36px,4vw,60px)/1.1 var(--sans);letter-spacing:-.03em}
+.out .conf{font:500 19px var(--mono);color:var(--accent);margin-top:10px;letter-spacing:.14em}
+.out .note{margin-top:19px;font-size:18px;color:var(--muted);line-height:1.5;min-height:42px}
+.badge{display:inline-block;font:17px var(--mono);letter-spacing:.18em;padding:5px 11px;border-radius:999px;margin-top:6px}
+.badge.agree{color:var(--green);border:1px solid var(--green)}.badge.dis{color:var(--amber);border:1px solid var(--amber)}.badge.na{color:var(--muted);border:1px solid var(--muted)}
+
+/* code */
+pre.code{font:19px/1.75 var(--mono);color:#b8c7e8;background:rgba(5,9,18,.8);border:1px solid var(--line);border-radius:14px;padding:26px;overflow:auto}
+pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}pre .c{color:#5b6b8c}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px;position:relative}
+.tl::before{content:"";position:absolute;left:0;right:0;top:9px;height:1px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)}
+.tl div{position:relative;padding-top:34px}
+.tl div::before{content:"";position:absolute;top:3px;left:0;width:13px;height:13px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);box-shadow:0 0 12px var(--accent)}
+.tl div.done::before{background:var(--accent)}
+.tl h4{font-weight:500;font-size:26px;margin-bottom:6px}.tl p{font-size:20px;color:var(--muted);line-height:1.5;font-weight:300}
+
+.closing{align-items:center;text-align:center}
+.closing h2{max-width:14ch;font-size:clamp(56px,8vw,128px)}
+.closing .cta{justify-content:center}
+
+.ans{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.model{width:100%;height:42vh;min-height:280px;background:transparent;--poster-color:transparent;filter:drop-shadow(0 0 40px rgba(55,230,255,.18))}
+@media(max-width:900px){.ans{grid-template-columns:1fr}}
+.credit{font:500 17px var(--mono);letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:34px}
+.credit b{color:var(--text);font-weight:500}
+.tree{font:17px/1.7 var(--mono);color:var(--muted);margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
+.tree b{color:var(--accent);font-weight:500}
+.sm.card{padding:24px}.sm.card h3{font-size:26px}.sm.card p{font-size:19px}
+@media(max-width:900px){
+  .g2,.g3,.g4,.split,.sim,.tl,.tree{grid-template-columns:1fr}
+  #dots,header.top .hint{display:none}
+  header.top{padding:14px 20px}
+  section.slide{padding:84px 20px 70px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas><div class="vignette"></div>
+<div id="progress"></div>
+<header class="top"><b>CONCUR</b><span class="hint">Created by&nbsp;<b>Tam Pham</b>&nbsp;&amp;&nbsp;<b>Hayden Hargreaves</b></span></header>
+<nav id="dots"></nav>
+<div id="counter"><b id="cur">01</b> / <span id="tot">12</span></div>
+
+<!-- 01 HERO -->
+<section class="slide" id="s0" data-title="Intro">
+  <div class="logo rv"><i></i>CONCUR</div>
+  <h1 class="rv"><span>Two senses.</span><span><em>One verdict.</em></span></h1>
+  <div class="cta rv"><a class="btn solid" href="#s1">Begin the tour</a><a class="btn" href="#s6">Try the fusion engine</a><a class="btn" href="/" target="_blank" rel="noopener">Live dashboard ↗</a></div>
+  <div class="stats rv">
+    <div><b>2</b><span>Independent edge nodes</span></div>
+    <div><b>3</b><span>Clear states</span></div>
+    <div><b>500ms</b><span>Heartbeat</span></div>
+    <div><b>1</b><span>Fused verdict</span></div>
+  </div>
+</section>
+
+<!-- 02 PROBLEM -->
+<section class="slide" id="s1" data-title="Problem">
+  <div class="eyebrow rv">The core problem</div>
+  <h2 class="rv">One device sees <em>only part of the world.</em></h2>
+  <p class="lead rv">Smart devices are everywhere, but each one has a narrow view: a limited field, a single kind of sensing, one point of failure.</p>
+  <div class="grid g3 vs rv">
+    <div class="card"><div class="tag x">01 · Limited sensing</div><h3>A narrow view</h3><p>One device covers one angle and one modality. Whatever it can't see, it can't judge.</p></div>
+    <div class="card"><div class="tag x">02 · Fragile reliability</div><h3>One view, one failure</h3><p>Noise, occlusion or a fault silently corrupts the answer, and nothing else can check it.</p></div>
+    <div class="card"><div class="tag x">03 · Costly communication</div><h3>Sharing is expensive</h3><p>Streaming raw data between devices burns bandwidth, adds delay and exposes private data.</p></div>
+  </div>
+  <p class="lead rv" style="margin-top:34px"><strong>The challenge:</strong> gain the reliability of many views without paying for them in communication.</p>
+</section>
+
+<!-- 03 SOLUTION -->
+<section class="slide" id="s2" data-title="Solution">
+  <div class="eyebrow rv">Our answer</div>
+  <div class="ans">
+    <div>
+      <h2 class="rv">Decide at the edge. <em>Agree in the cloud.</em></h2>
+    <p class="lead rv">Each node classifies locally on its own Arduino UNO Q and publishes a tiny, standard packet. A fusion layer compares them and produces one verdict you can act on.</p>
+    </div>
+    <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
+  </div>
+  <div class="grid g3 rv">
+    <div class="card"><div class="tag">01 · Sense</div><div class="big" style="margin:14px 0">2×</div><p>Camera vision and Modulino distance, motion and light sensing — different physics, different failure modes.</p></div>
+    <div class="card"><div class="tag">02 · Classify</div><div class="big" style="margin:14px 0">Local</div><p>Every node makes its own decision on-device. No raw video leaves the board — only a state and a confidence.</p></div>
+    <div class="card"><div class="tag">03 · Fuse</div><div class="big" style="margin:14px 0">1</div><p>A single fused state with confidence, an agreement flag, and a human-readable explanation.</p></div>
+  </div>
+</section>
+
+<!-- 04 ARCHITECTURE -->
+<section class="slide" id="s3" data-title="Architecture">
+  <div class="eyebrow rv">System architecture</div>
+  <h2 class="rv">Small packets. <em>Big picture.</em></h2>
+  <div class="arch rv">
+    <svg viewBox="0 0 1200 470" fill="none">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#37e6ff"/><stop offset="1" stop-color="#8b6bff"/></linearGradient>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8b6bff"/></marker>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g fill="rgba(14,22,40,.85)" stroke="url(#g)" stroke-width="1.6">
+        <rect x="10" y="10" width="340" height="180" rx="16"/>
+        <rect x="10" y="220" width="340" height="180" rx="16"/>
+        <rect x="420" y="105" width="280" height="190" rx="16"/>
+        <rect x="840" y="105" width="350" height="190" rx="16"/>
+      </g>
+      <g fill="#e8eefc" font-size="26" font-weight="500" style="font-family:'Space Grotesk',sans-serif">
+        <text x="32" y="56">NODE A · Vision</text><text x="32" y="266">NODE B · Sensors</text>
+        <text x="442" y="151">RabbitMQ (MQTT)</text><text x="862" y="151">Fusion Dashboard</text>
+      </g>
+      <g fill="#37e6ff" font-size="15" letter-spacing="1.5">
+        <text x="32" y="86">ARDUINO UNO Q</text><text x="32" y="296">ARDUINO UNO Q</text>
+        <text x="442" y="181">SELF-HOSTED BROKER</text><text x="862" y="181">PYTHON · STREAMLIT</text>
+      </g>
+      <g fill="#8c9ab8" font-size="17">
+        <text x="32" y="128">Logitech camera</text><text x="32" y="156"> → motion + direction</text>
+        <text x="32" y="338">Modulino:</text>
+        <text x="32" y="366">distance · motion · light</text>
+        <text x="442" y="225">Node A State</text><text x="442" y="255">Node B State</text>
+        <text x="862" y="225">fuse() → one conclusion</text>
+      </g>
+      <g stroke="url(#g)" stroke-width="2.5" class="flow" filter="url(#glow)">
+        <path d="M350 100 C 385 100, 385 200, 420 200"/><path d="M350 310 C 385 310, 385 200, 420 200"/>
+        <path d="M700 200 L834 200" marker-end="url(#arr)" stroke-width="4"/>
+      </g>
+      <g fill="#37e6ff" filter="url(#glow)">
+        <circle r="5"><animateMotion dur="2.2s" repeatCount="indefinite" path="M350 100 C 385 100, 385 200, 420 200"/></circle>
+        <circle r="5"><animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" path="M350 310 C 385 310, 385 200, 420 200"/></circle>
+        <circle r="7"><animateMotion dur="1.4s" repeatCount="indefinite" path="M700 200 L834 200"/></circle>
+        <circle r="7"><animateMotion dur="1.4s" begin=".7s" repeatCount="indefinite" path="M700 200 L834 200"/></circle>
+      </g>
+      <g fill="#37e6ff" font-size="14" letter-spacing="2" text-anchor="middle"><text x="768" y="182">LIVE STREAM</text></g>
+      <g fill="#3dff9a"><circle cx="324" cy="36" r="6"/><circle cx="324" cy="246" r="6"/></g>
+      <text x="10" y="462" fill="#8c9ab8" font-size="16">● Onboard LED on each node shows its local decision, independent of the dashboard</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 05 NODE A -->
+<section class="slide" id="s4" data-title="Node A">
+  <div class="split">
+    <div>
+      <div class="eyebrow rv">Node A · Vision</div>
+      <h2 class="rv">It watches. <em>It understands.</em></h2>
+      <ul class="chk rv">
+        <li><b>Person detection</b> runs on the board itself: a pre-trained model finds people in every camera frame.</li>
+        <li><b>Motion classifier</b> tracks the person over a 1.5s window — apparent speed, scale change and direction.</li>
+        <li><b>Approaching or moving away</b>, inferred from bounding-box growth, not guesswork.</li>
+        <li><b>Camera fault check</b> flags a missing device and lights the LED blue.</li>
+      </ul>
+    </div>
+    <div class="viewfinder rv">
+      <div class="rec">REC</div>
+      <div class="bbox"><span>PERSON 0.92</span></div>
+      <div class="vf-hud">NODE_A · EDGE DETECT<br>STATE ▸ ACTIVE PRESENCE<br>DIR ▸ APPROACHING</div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 NODE B -->
+<section class="slide" id="s5" data-title="Node B">
+  <div class="split">
+    <div>
+      <div class="eyebrow rv">Node B · Physical sensing</div>
+      <h2 class="rv">It feels. <em>It measures.</em></h2>
+      <ul class="chk rv">
+        <li><b>Distance sensor</b> — ranges up to 1,2 m.</li>
+        <li><b>Movement sensor</b> — any shock beyond 0.05&nbsp;g flags an abnormal disturbance at 0.95 confidence.</li>
+        <li><b>Light sensor</b> — low-light context nudges presence confidence up.</li>
+        <li><b>Sensor-health guards</b> — a disconnected sensor can never fake a disturbance.</li>
+      </ul>
+    </div>
+    <div class="sensor rv" id="sensorDemo">
+      <div class="meter"><div class="row"><span>Distance</span><b id="mDist">—</b></div><div class="bar"><i id="bDist"></i></div></div>
+      <div class="meter"><div class="row"><span>Acceleration Δ</span><b id="mAcc">—</b></div><div class="bar"><i id="bAcc"></i></div></div>
+      <div class="meter"><div class="row"><span>Ambient light</span><b id="mLux">—</b></div><div class="bar"><i id="bLux"></i></div></div>
+      <div class="meter"><div class="row"><span>Local verdict</span><b id="mState">—</b></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 STATES -->
+<section class="slide" id="s6a" data-title="States">
+  <div class="eyebrow rv">One shared language</div>
+  <h2 class="rv">Three states. <em>Zero ambiguity.</em></h2>
+  <p class="lead rv">Both nodes speak the same vocabulary, so their outputs are directly comparable — and visible on the hardware itself.</p>
+  <div class="grid g3 rv">
+    <div class="card state"><div class="orb s0"></div><div class="tag">State 0</div><h3>Idle</h3><p>Nothing happening. LED off. Baseline confidence 0.90.</p></div>
+    <div class="card state"><div class="orb s1"></div><div class="tag">State 1</div><h3>Active Presence</h3><p>Someone is here. LED green.<br>Direction reported: approaching or moving away.</p></div>
+    <div class="card state"><div class="orb s2"></div><div class="tag">State 2</div><h3>Abnormal Disturbance</h3><p>Something is wrong. LED red.<br>Always wins a disagreement.</p></div>
+  </div>
+</section>
+
+<!-- 08 FUSION SIM -->
+<section class="slide" id="s6" data-title="Fusion">
+  <div class="eyebrow rv">Fusion engine · live</div>
+  <h2 class="rv">Set the inputs. <em>Watch it decide.</em></h2>
+  <div class="sim rv">
+    <div class="card"><div class="tag">Node A · Vision</div>
+      <div class="seg" id="segA"></div>
+      <div class="range">CONFIDENCE <span id="cA">0.90</span><input type="range" min="50" max="99" value="90" id="rA"></div>
+    </div>
+    <div class="card"><div class="tag">Node B · Sensors</div>
+      <div class="seg" id="segB"></div>
+      <div class="range">CONFIDENCE <span id="cB">0.90</span><input type="range" min="50" max="99" value="90" id="rB"></div>
+    </div>
+    <div class="card out">
+      <div class="orb off" id="oOrb"></div>
+      <div class="tag">Fused verdict</div>
+      <div class="verdict" id="oState">—</div>
+      <div class="conf" id="oConf">—</div>
+      <div><span class="badge na" id="oBadge">—</span></div>
+      <div class="note" id="oNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 PROTOCOL -->
+<section class="slide" id="s8" data-title="Protocol">
+  <div class="split">
+    <div>
+      <div class="eyebrow rv">The contract</div>
+      <h2 class="rv">One packet. <em>Any node.</em></h2>
+      <p class="lead rv">A deliberately tiny JSON schema. The fusion layer only needs <span class="mono" style="color:var(--accent)">state</span> and <span class="mono" style="color:var(--accent)">confidence</span> — so adding a third node is a configuration change, not a rewrite.</p>
+    </div>
+<pre class="code rv"><span class="c">// sensors/node_a/state</span>
+{
+  <span class="k">"version"</span>:    <span class="n">1</span>,
+  <span class="k">"node"</span>:       <span class="s">"node_a"</span>,
+  <span class="k">"state"</span>:      <span class="n">1</span>,   <span class="c">// 0 idle · 1 presence · 2 abnormal</span>
+  <span class="k">"direction"</span>:  <span class="n">0</span>,   <span class="c">// 0 approaching · 1 away </span>
+  <span class="k">"confidence"</span>: <span class="n">0.92</span>,
+  <span class="k">"timestamp"</span>:  <span class="n">1732000000</span>,
+  <span class="k">"health"</span>:     <span class="s">"HEALTHY"</span>
+}</pre>
+  </div>
+</section>
+
+<!-- STRUGGLES -->
+<section class="slide" id="sstruggle" data-title="Challenges">
+  <div class="eyebrow rv">What fought back</div>
+  <h2 class="rv">The hard parts, <em>and how we fixed them.</em></h2>
+  <div class="grid g3 rv">
+    <div class="card sm"><div class="tag x">Camera classes</div><h3>Camera detector</h3><p>Telling approaching from moving away took many rounds of walking at the camera. We landed on a 1.5 s window and a 3%/s change in box size.</p></div>
+    <div class="card sm"><div class="tag x">Modulino sensors</div><h3>Movement &amp; Light sensor</h3><p>At first they missed changes in light and motion. Physical tests found the right numbers: under 50 lux, a 0.05 motion change, 40 mm/s for direction.</p></div>
+    <div class="card sm"><div class="tag x">Silence</div><h3>Dead or just quiet?</h3><p>A node with nothing to report looked broken. Now both nodes check in every 500 ms, even when idle. Five seconds of silence marks a node offline.</p></div>
+  </div>
+</section>
+
+<!-- SCENARIO -->
+<section class="slide" id="sscene" data-title="Scenario">
+  <div class="eyebrow rv">One scene · two views</div>
+  <h2 class="rv">Same room. <em>One verdict.</em></h2>
+  <div class="arch rv">
+    <svg viewBox="0 0 1200 430" fill="none">
+      <defs>
+        <linearGradient id="gs" x1="0" x2="1"><stop offset="0" stop-color="#37e6ff"/><stop offset="1" stop-color="#8b6bff"/></linearGradient>
+        <linearGradient id="cone" x1="0" x2="1"><stop offset="0" stop-color="#37e6ff" stop-opacity=".28"/><stop offset="1" stop-color="#37e6ff" stop-opacity="0"/></linearGradient>
+        <filter id="glows"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <!-- room: floor + doorway -->
+      <path d="M40 360 H770" stroke="#3a4660" stroke-width="2"/>
+      <rect x="560" y="120" width="130" height="240" stroke="#3a4660" stroke-width="2" fill="rgba(14,22,40,.5)"/>
+      <!-- Node A: camera view cone -->
+      <path d="M215 112 L770 60 L770 360 L215 132 Z" fill="url(#cone)"/>
+      <!-- Node B: distance / motion waves -->
+      <g stroke="#8b6bff" stroke-width="2" opacity=".8" fill="none">
+        <path d="M240 290 a40 40 0 0 1 0 50"/><path d="M265 270 a70 70 0 0 1 0 90"/><path d="M290 250 a100 100 0 0 1 0 130"/>
+      </g>
+      <!-- person + detection box -->
+      <g stroke="#e8eefc" stroke-width="4" stroke-linecap="round" fill="none">
+        <circle cx="470" cy="200" r="18"/><path d="M470 218 V290 M470 240 L446 268 M470 240 L494 268 M470 290 L452 350 M470 290 L488 350"/>
+      </g>
+      <rect x="430" y="170" width="80" height="188" rx="4" stroke="#3dff9a" stroke-width="2" stroke-dasharray="6 5"/>
+      <rect x="430" y="148" width="104" height="20" rx="3" fill="#3dff9a"/><text x="436" y="163" fill="#021" font-size="13" font-weight="700">person 0.91</text>
+      <!-- nodes -->
+      <g fill="rgba(14,22,40,.9)" stroke="url(#gs)" stroke-width="1.6"><rect x="40" y="85" width="175" height="74" rx="12"/><rect x="40" y="278" width="175" height="74" rx="12"/></g>
+      <g fill="#e8eefc" font-size="20" font-weight="500" style="font-family:'Space Grotesk',sans-serif"><text x="60" y="118">NODE A</text><text x="60" y="311">NODE B</text></g>
+      <g fill="#8c9ab8" font-size="13"><text x="60" y="142">camera · vision</text><text x="60" y="335">sensors</text></g>
+      <circle cx="215" cy="122" r="9" fill="#05070d" stroke="#37e6ff" stroke-width="2"/>
+      <g fill="#3dff9a" filter="url(#glows)"><circle cx="192" cy="104" r="6"/><circle cx="192" cy="297" r="6"/></g>
+      <!-- packets to fusion -->
+      <g stroke="url(#gs)" stroke-width="2" class="flow" filter="url(#glows)">
+        <path id="pa" d="M128 85 V40 H1010 V120"/><path id="pb" d="M128 352 V405 H1010 V320"/>
+      </g>
+      <g fill="#37e6ff" filter="url(#glows)">
+        <circle r="5"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#pa"/></animateMotion></circle>
+        <circle r="5"><animateMotion dur="2.6s" begin="1.3s" repeatCount="indefinite"><mpath href="#pb"/></animateMotion></circle>
+      </g>
+      <g fill="#8c9ab8" font-size="14"><text x="300" y="30">state 1 · approaching · 0.91</text><text x="300" y="426">state 1 · present · 0.87</text></g>
+      <!-- fused verdict -->
+      <rect x="830" y="120" width="360" height="200" rx="16" fill="rgba(14,22,40,.9)" stroke="url(#gs)" stroke-width="1.6"/>
+      <circle cx="878" cy="178" r="20" fill="#3dff9a" filter="url(#glows)"/>
+      <text x="912" y="168" fill="#37e6ff" font-size="13" letter-spacing="2">FUSED VERDICT</text>
+      <text x="912" y="196" fill="#e8eefc" font-size="26" font-weight="500" style="font-family:'Space Grotesk',sans-serif">Active presence</text>
+      <text x="856" y="248" fill="#8c9ab8" font-size="15">Confidence: 0.89 · Nodes agree</text>
+      <text x="856" y="280" fill="#8c9ab8" font-size="15">→ lights on, no alert</text>
+    </svg>
+  </div>
+  <div class="grid g3 rv" style="margin-top:22px">
+    <div class="card sm"><div class="tag">Scenario 1 </div><h3>Scenario 1 — Early detection + corroboration </h3></div>
+    <div class="card sm"><div class="tag x">Scenario 2 </div><h3>Graceful degradation</h3></div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="slide" id="sapps" data-title="Applications">
+  <div class="eyebrow rv">The vision</div>
+  <h2 class="rv">Anywhere devices <em>must agree.</em></h2>
+  <p class="lead rv">Concur is a small version of a bigger idea: cheap devices combining small messages into one decision you can trust.</p>
+  <div class="grid g3 rv">
+    <div class="card sm"><div class="tag">01 · Safety</div><h3>Care and safety</h3><p>Spot a fall for someone living alone, or a person entering a machine zone, even when one sensor is blocked or fails.</p></div>
+    <div class="card sm"><div class="tag">02 · Security</div><h3>Fewer false alarms</h3><p>Confirm a real intrusion with two independent senses before anyone gets called.</p></div>
+    <div class="card sm"><div class="tag">03 · Spaces</div><h3>Smart buildings</h3><p>Know which rooms are occupied and how people flow, shared as tiny numbers, not video.</p></div>
+  </div>
+</section>
+
+<!-- 12 ROADMAP + CLOSE -->
+<section class="slide" id="s10" data-title="Roadmap">
+  <div class="eyebrow rv">Where we are · where we go</div>
+  <h2 class="rv">From prototype to <em>platform.</em></h2>
+  <div class="tl rv">
+    <div class="done"><h4>Two live nodes</h4><p>Vision and sensor nodes classifying on-device.</p></div>
+    <div class="done"><h4>Fusion dashboard</h4><p>Real-time fused verdict over MQTT with history.</p></div>
+    <div><h4>Smarter fusion</h4><p>Weighted, confidence-aware rules beyond "escalate on disagreement".</p></div>
+    <div><h4>More nodes</h4><p>Additional sensors and rooms on the same packet contract.</p></div>
+  </div>
+</section>
+
+<section class="slide closing" id="s11" data-title="Close">
+  <div class="logo rv"><i></i>CONCUR</div>
+  <h2 class="rv">Trust what <em>two senses</em> agree on.</h2>
+  <p class="lead rv">IEEE-Qualcomm Project 2026</p>
+  <div class="cta rv"><a class="btn" href="#s0">Back to start</a><a class="btn" href="#s6">Replay the demo</a><a class="btn solid" href="/" target="_blank" rel="noopener">Open live dashboard ↗</a></div>
+</section>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<script>
+/* ---------- 3D model materials ---------- */
+/* Onshape names each material by its sRGB color ("0.141176_0.192157_...") but writes those
+   values as if linear, so colors render washed out. Rebuild them from the name, then make
+   the shell translucent so the boards inside show through like in Onshape. */
+(function(){
+  const mv=document.querySelector('model-viewer.model');if(!mv)return;
+  const lin=c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4;
+  const hex=rgb=>rgb.map(c=>Math.round(c*255).toString(16).padStart(2,'0')).join('');
+  const LOOK={
+    '2b3342':{metal:.3,rough:.35},                                // shell
+    '283757':{color:'37e6ff',metal:0,rough:.5,glow:[.2,1,1]},     // CONCUR lettering: bright cyan glow
+    '24314f':{color:'0b5fa5',metal:.1,rough:.1},                  // Arduino board
+    '000000':{color:'1c2230',metal:.6,rough:.3},                  // chips / headers
+  };
+  mv.addEventListener('load',()=>{
+    for(const m of mv.model.materials){
+      const rgb=m.name.split('_').slice(0,3).map(Number);if(rgb.length<3||rgb.some(isNaN))continue;
+      const look=LOOK[hex(rgb)]||{},pbr=m.pbrMetallicRoughness;
+      pbr.setBaseColorFactor([...rgb.map(lin),look.alpha??1]);
+      pbr.setMetallicFactor(look.metal??.1);pbr.setRoughnessFactor(look.rough??.55);
+      if(look.alpha!=null)m.setAlphaMode('BLEND');
+      if(look.glow)m.setEmissiveFactor(look.glow);
+    }
+  });
+
+  /* face the front (CONCUR lid) whenever the slide is shown, hold, then spin.
+     Reset on leave too, so it is already facing front while scrolling back in. */
+  const FRONT='90deg 0deg auto',HOLD=1500;let t;
+  const front=()=>{clearTimeout(t);mv.autoRotate=false;mv.cameraOrbit=FRONT;mv.resetTurntableRotation(0);mv.jumpCameraToGoal()};
+  mv.autoRotate=false;
+  new IntersectionObserver(es=>es.forEach(e=>{
+    front();
+    if(e.isIntersecting)t=setTimeout(()=>mv.autoRotate=true,HOLD);
+  }),{threshold:.3}).observe(mv.closest('section'));
+})();
+
+/* ---------- background network ---------- */
+(function(){
+  const c=document.getElementById('bg'),x=c.getContext('2d');let w,h,P=[];
+  const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;P=Array.from({length:Math.min(90,w*h/16000|0)},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25}))}
+  function frame(){
+    x.clearRect(0,0,w,h);
+    for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1}
+    for(let i=0;i<P.length;i++){const a=P[i];
+      for(let j=i+1;j<P.length;j++){const b=P[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<150){x.strokeStyle=`rgba(80,200,255,${.16*(1-d/150)})`;x.lineWidth=1;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}}
+      x.fillStyle='rgba(120,220,255,.7)';x.beginPath();x.arc(a.x,a.y,1.4,0,7);x.fill()}
+    if(!still)requestAnimationFrame(frame)
+  }
+  addEventListener('resize',size);size();frame();
+})();
+
+/* ---------- navigation ---------- */
+const slides=[...document.querySelectorAll('section.slide')];
+const dots=document.getElementById('dots'),cur=document.getElementById('cur');
+document.getElementById('tot').textContent=String(slides.length).padStart(2,'0');
+slides.forEach((s,i)=>{const a=document.createElement('a');a.href='#'+s.id;a.innerHTML=`<span>${s.dataset.title}</span>`;dots.appendChild(a)});
+let idx=0;
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');idx=slides.indexOf(e.target);
+    [...dots.children].forEach((d,i)=>d.classList.toggle('on',i===idx));cur.textContent=String(idx+1).padStart(2,'0')}
+}),{threshold:.55});
+slides.forEach(s=>io.observe(s));
+const prog=document.getElementById('progress');
+addEventListener('scroll',()=>{prog.style.width=(scrollY/(document.documentElement.scrollHeight-innerHeight)*100)+'%'},{passive:true});
+function go(i){slides[Math.max(0,Math.min(slides.length-1,i))].scrollIntoView({behavior:'smooth'})}
+addEventListener('keydown',e=>{
+  if(e.target.matches('input'))return;
+  if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(idx+1)}
+  else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1)}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+  else if(e.key.toLowerCase()==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+});
+
+/* ---------- Node B sensor animation (illustrative) ---------- */
+(function(){
+  const $=id=>document.getElementById(id);let t=0;
+  setInterval(()=>{
+    t+=.18;
+    const dist=Math.max(30,Math.min(1200,Math.round(640+Math.sin(t)*560+Math.sin(t*2.7)*90)));
+    const bump=Math.random()<.04?.12:Math.abs(Math.sin(t*3))*.015;
+    const lux=Math.round(40+Math.sin(t*.6)*30+30);
+    $('mDist').textContent=dist+' mm';$('bDist').style.width=Math.max(4,100-dist/12)+'%';
+    $('mAcc').textContent=bump.toFixed(3)+' g';$('bAcc').style.width=Math.min(100,bump/.15*100)+'%';
+    $('mLux').textContent=lux+' lx';$('bLux').style.width=Math.min(100,lux)+'%';
+    let s='IDLE',col='var(--muted)';
+    if(bump>.05){s='ABNORMAL DISTURBANCE';col='var(--red)'}else if(dist<=800){s='ACTIVE PRESENCE';col='var(--green)'}
+    $('mState').textContent=s;$('mState').style.color=col;
+  },350);
+})();
+
+/* ---------- Fusion simulator (mirrors fusion_dashboard/fusion.py) ---------- */
+(function(){
+  const L=['Idle','Active Presence','Abnormal Disturbance'];
+  const opts=[{v:null,l:'Offline'},{v:0,l:'Idle'},{v:1,l:'Active Presence'},{v:2,l:'Abnormal Disturbance'}];
+  const sel={A:1,B:2};
+  const $=id=>document.getElementById(id);
+  function build(k){
+    const seg=$('seg'+k);seg.innerHTML='';
+    opts.forEach(o=>{const b=document.createElement('button');b.textContent=o.l;b.classList.toggle('on',sel[k]===o.v);
+      b.onclick=()=>{sel[k]=o.v;build(k);run()};seg.appendChild(b)});
+  }
+  function fuse(a,b){
+    if(!a&&!b)return{state:null,conf:0,agree:null,note:'No data from either node yet.'};
+    if(!a||!b){const o=a||b,m=a?'Node B':'Node A';return{state:o.s,conf:o.c,agree:null,note:`${m} offline — showing the other node's reading only.`}}
+    if(a.s===b.s)return{state:a.s,conf:Math.round((a.c+b.c)*50)/100,agree:true,note:'Nodes agree.'};
+    const w=a.s>b.s?a:b;
+    return{state:w.s,conf:w.c,agree:false,note:`Nodes disagree (A: ${L[a.s]}, B: ${L[b.s]}).`};
+  }
+  function run(){
+    const a=sel.A===null?null:{s:sel.A,c:$('rA').value/100},b=sel.B===null?null:{s:sel.B,c:$('rB').value/100};
+    $('cA').textContent=(+$('rA').value/100).toFixed(2);$('cB').textContent=(+$('rB').value/100).toFixed(2);
+    const r=fuse(a,b),orb=$('oOrb');
+    orb.className='orb '+(r.state===null?'off':'s'+r.state);
+    $('oState').textContent=r.state===null?'No signal':L[r.state];
+    $('oConf').textContent=r.state===null?'—':'CONFIDENCE '+r.conf.toFixed(2);
+    const bd=$('oBadge');bd.className='badge '+(r.agree===true?'agree':r.agree===false?'dis':'na');
+    bd.textContent=r.agree===true?'AGREE':r.agree===false?'DISAGREE':'DEGRADED';
+    $('oNote').textContent=r.note;
+  }
+  ['rA','rB'].forEach(i=>$(i).addEventListener('input',run));
+  build('A');build('B');run();
+})();
+</script>
+</body>
+</html>

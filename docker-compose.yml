@@ -1,0 +1,12 @@
+# One domain: / -> fusion dashboard, /landing/ -> landing page.
+services:
+  dashboard:
+    image: ghcr.io/haydenhargreaves/concur-fusion-dashboard:latest
+    restart: unless-stopped
+  web:
+    build: ./landing
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - dashboard

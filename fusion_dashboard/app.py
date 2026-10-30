@@ -13,7 +13,7 @@ from fusion import fuse
 from states import STATE_ABNORMAL_DISTURBANCE, STATE_ACTIVE_PRESENCE, STATE_IDLE, STATE_LABELS
 
 HISTORY_LIMIT = 100
-FUSED_COLOR = "#ff6b35"
+FUSED_COLOR = "#37e6ff"
 # Node A pulses every 0.5s; Node B's cadence is unknown, so keep some slack.
 STALE_AFTER_SECONDS = 5
 
@@ -30,7 +30,39 @@ st.set_page_config(page_title="Concur - Sensor Fusion Dashboard", layout="wide")
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;700&display=swap');
     html { font-size: 112.5%; }
+    html, body, [class*="st-"], .stApp { font-family: 'Space Grotesk', system-ui, sans-serif; }
+    /* Keep Streamlit's icon font; the override above would turn icons into plain letters. */
+    [data-testid="stIconMaterial"], [data-testid="stIconMaterial"] *,
+    span[class*="material-symbols"], span[class*="material-icons"] {
+        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons' !important; text-transform: none; letter-spacing: normal;
+    }
+    .stApp {
+        background:
+            radial-gradient(ellipse at 50% 0%, rgba(55,230,255,.10), transparent 60%),
+            radial-gradient(ellipse at 100% 100%, rgba(139,107,255,.08), transparent 55%),
+            #05070d;
+    }
+    [data-testid="stHeader"] { background: transparent; }
+    [data-testid="stSidebar"] { background: rgba(10,15,28,.85); border-right: 1px solid rgba(55,230,255,.16); }
+    h1, h2, h3 { font-weight: 500; letter-spacing: -.02em; }
+    h2, h3, [data-testid="stMetricLabel"], .stCaption, [data-testid="stSidebar"] h2 {
+        font-family: 'JetBrains Mono', monospace;
+    }
+    h3 { font-size: .85rem !important; letter-spacing: .2em; text-transform: uppercase; color: #37e6ff; }
+    [data-testid="stMetricValue"] { font-weight: 300; letter-spacing: -.03em; }
+    [data-testid="stColumn"] > div > [data-testid="stVerticalBlock"] {
+        background: rgba(14,22,40,.62); border: 1px solid rgba(55,230,255,.16);
+        border-radius: 16px; padding: 1.1rem 1.3rem; backdrop-filter: blur(14px);
+    }
+    [data-testid="stAlert"] { border-radius: 12px; }
+    .stButton > button {
+        font-family: 'JetBrains Mono', monospace; letter-spacing: .12em; text-transform: uppercase;
+        border-radius: 999px; border: 1px solid #37e6ff; color: #37e6ff; background: transparent;
+    }
+    .stButton > button:hover { background: #37e6ff; color: #05070d; border-color: #37e6ff; box-shadow: 0 0 24px rgba(55,230,255,.45); }
+    hr { border-color: rgba(55,230,255,.16) !important; }
     .block-container { padding-top: 2rem; }
     .block-container h1 { padding-top: 0; }
     [data-testid="stSidebarHeader"] {
@@ -143,7 +175,7 @@ def render_dashboard_body(source):
     if fused["state"] is not None and fused["state"] != st.session_state.last_fused_state:
         st.session_state.events.append(
             {
-                "time 23": pd.to_datetime(now, unit="s").strftime("%H:%M:%S"),
+                "time": pd.to_datetime(now, unit="s").strftime("%H:%M:%S"),
                 "Fused state": STATE_LABELS[fused["state"]],
             }
         )
@@ -155,7 +187,7 @@ def render_dashboard_body(source):
     # -------------------------------------------------------------------
 
     st.markdown(
-        f'# <span style="color:{FUSED_COLOR}">Concur</span> - Sensor Fusion Dashboard',
+        f'# <span style="color:{FUSED_COLOR};letter-spacing:.3em">CONCUR</span> <span style="font-weight:300">&middot; Sensor Fusion</span>',
         unsafe_allow_html=True,
     )
 
@@ -193,7 +225,7 @@ def render_dashboard_body(source):
     st.line_chart(
         history_df,
         height=420,
-        color=["#5b8def", "#2ca58d", FUSED_COLOR],  # Node A, Node B, Fused
+        color=["#ffd166", "#3dff9a", FUSED_COLOR],  # Node A, Node B, Fused
     )
 
     st.subheader("Recent fused state changes")
