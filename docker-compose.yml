@@ -1,12 +1,8 @@
-# One domain: / -> fusion dashboard, /landing/ -> landing page.
+# One image: / -> fusion dashboard, /landing/ -> landing page.
 services:
-  dashboard:
-    image: ghcr.io/haydenhargreaves/concur-fusion-dashboard:latest
-    restart: unless-stopped
-  web:
-    build: ./landing
+  concur:
+    image: ghcr.io/haydenhargreaves/concur-fusion-dashboard:master
+    pull_policy: always
     restart: unless-stopped
     ports:
       - "80:80"
-    depends_on:
-      - dashboard
