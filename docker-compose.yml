@@ -1,0 +1,8 @@
+# One image: / -> fusion dashboard, /landing/ -> landing page.
+services:
+  concur:
+    image: ghcr.io/haydenhargreaves/concur-fusion-dashboard:master
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "80:80"

@@ -1,4 +1,4 @@
-name: Build and publish fusion dashboard image
+name: Build and publish Concur web image
 
 on:
   push:
@@ -6,7 +6,10 @@ on:
     tags: ["v*"]
     paths:
       - "fusion_dashboard/**"
+      - "landing/**"
       - "node_b_sensors/python/classifier.py"
+      - "Dockerfile"
+      - "docker/**"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
 
@@ -42,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: fusion_dashboard/Dockerfile
+          file: Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
