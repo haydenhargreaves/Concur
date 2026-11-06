@@ -40,6 +40,7 @@ kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;paddi
 
 /* slides */
 section.slide{position:relative;z-index:5;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;padding:88px max(36px,6vw) 72px}
+#s2{padding-bottom:120px}
 .eyebrow{font:500 16px var(--mono);letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px}
 .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
 h1,h2{font-weight:500;letter-spacing:-.03em;line-height:1.02}
@@ -159,11 +160,47 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .ans{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
 .model{width:100%;height:42vh;min-height:280px;background:transparent;--poster-color:transparent;filter:drop-shadow(0 0 40px rgba(55,230,255,.18))}
 @media(max-width:900px){.ans{grid-template-columns:1fr}}
+/* slide 3: shorter model + compact cards so the row clears the bottom edge */
+#s2{padding-top:72px;padding-bottom:56px}
+#s2 .model{height:34vh;min-height:240px}
+#s2 .grid{margin-top:20px}
+#s2 .card{padding:22px 26px}
+#s2 .card .big{margin:8px 0!important;font-size:clamp(44px,5vw,72px)}
 .credit{font:500 17px var(--mono);letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:34px}
 .credit b{color:var(--text);font-weight:500}
 .tree{font:17px/1.7 var(--mono);color:var(--muted);margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
 .tree b{color:var(--accent);font-weight:500}
+.apps{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.apps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:14px}
+.apps-row b{display:block;font-weight:500;font-size:22px;margin-bottom:4px}
+.apps-row span{font-size:18px;color:var(--muted);font-weight:300;line-height:1.45}
+@media(max-width:900px){.apps-row{grid-template-columns:1fr}}
+/* confidence formula (Node A/B) + fusion rules (slide 8) */
+.formula{margin-top:26px;padding:16px 20px;border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:10px;background:rgba(5,9,18,.55);display:grid;gap:6px;max-width:640px}
+.formula small{white-space:nowrap}
+.formula code{font:500 20px var(--mono);color:var(--text)}
+.formula small{font:16px var(--mono);color:var(--muted)}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+.rules div{display:grid;gap:4px;padding:14px 18px;border:1px solid var(--line);border-radius:10px;background:rgba(5,9,18,.55)}
+.rules b{font-weight:500;font-size:20px}
+.rules small{font:15px var(--mono);color:var(--muted)}
+@media(max-width:900px){.rules{grid-template-columns:1fr}.formula small{white-space:normal}}
 .sm.card{padding:24px}.sm.card h3{font-size:26px}.sm.card p{font-size:19px}
+.challenge-copy{display:grid;gap:14px}
+.challenge-card .challenge-copy{font-size:21px;line-height:1.5}
+.challenge-copy span{display:block}
+.challenge-copy b{font:500 15px var(--mono);letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.challenge-copy ul{margin:8px 0 0 22px;display:grid;gap:6px}
+.challenge-copy li{padding-left:4px}
+.challenge-copy .number{font:700 21px var(--mono);letter-spacing:0;color:var(--amber)}
+.challenge-card h3{color:var(--red)}
+.sense-list{list-style:none;margin-top:8px;display:grid;gap:12px;font:300 21px/1.55 var(--sans)}
+.sense-list>li{position:relative;padding-left:22px}
+.sense-list>li::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border:1px solid var(--accent);border-radius:50%;box-shadow:0 0 8px rgba(55,230,255,.5)}
+.sense-list b{color:var(--text);font-weight:500}
+.sense-list ul{margin:8px 0 0 24px;display:grid;gap:5px;color:var(--muted)}
+.sense-list ul li{position:relative;padding-left:16px}
+.sense-list ul li::before{content:"";position:absolute;left:0;top:.65em;width:6px;height:1px;background:var(--accent)}
 @media(max-width:900px){
   .g2,.g3,.g4,.split,.sim,.tl,.tree{grid-template-columns:1fr}
   #dots,header.top .hint{display:none}
@@ -197,11 +234,10 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 <section class="slide" id="s1" data-title="Problem">
   <div class="eyebrow rv">The core problem</div>
   <h2 class="rv">One device sees <em>only part of the world.</em></h2>
-  <p class="lead rv">Smart devices are everywhere, but each one has a narrow view: a limited field, a single kind of sensing, one point of failure.</p>
   <div class="grid g3 vs rv">
-    <div class="card"><div class="tag x">01 · Limited sensing</div><h3>A narrow view</h3><p>One device covers one angle and one modality. Whatever it can't see, it can't judge.</p></div>
-    <div class="card"><div class="tag x">02 · Fragile reliability</div><h3>One view, one failure</h3><p>Noise, occlusion or a fault silently corrupts the answer, and nothing else can check it.</p></div>
-    <div class="card"><div class="tag x">03 · Costly communication</div><h3>Sharing is expensive</h3><p>Streaming raw data between devices burns bandwidth, adds delay and exposes private data.</p></div>
+    <div class="card"><div class="tag x">01 · Limited sensing</div><h3>A narrow view</h3><ul class="sense-list"><li>One angle</li><li>One modality</li><li>Blind spots go unjudged</li></ul></div>
+    <div class="card"><div class="tag x">02 · Fragile reliability</div><h3>One view, one failure</h3><ul class="sense-list"><li>Noise</li><li>Occlusion</li><li>Silent faults</li></ul></div>
+    <div class="card"><div class="tag x">03 · Costly communication</div><h3>Sharing is expensive</h3><ul class="sense-list"><li>Bandwidth</li><li>Delay</li><li>Privacy exposure</li></ul></div>
   </div>
   <p class="lead rv" style="margin-top:34px"><strong>The challenge:</strong> gain the reliability of many views without paying for them in communication.</p>
 </section>
@@ -212,14 +248,14 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   <div class="ans">
     <div>
       <h2 class="rv">Decide at the edge. <em>Agree in the cloud.</em></h2>
-    <p class="lead rv">Each node classifies locally on its own Arduino UNO Q and publishes a tiny, standard packet. A fusion layer compares them and produces one verdict you can act on.</p>
     </div>
     <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
   </div>
   <div class="grid g3 rv">
-    <div class="card"><div class="tag">01 · Sense</div><div class="big" style="margin:14px 0">2×</div><p>Camera vision and Modulino distance, motion and light sensing — different physics, different failure modes.</p></div>
-    <div class="card"><div class="tag">02 · Classify</div><div class="big" style="margin:14px 0">Local</div><p>Every node makes its own decision on-device. No raw video leaves the board — only a state and a confidence.</p></div>
-    <div class="card"><div class="tag">03 · Fuse</div><div class="big" style="margin:14px 0">1</div><p>A single fused state with confidence, an agreement flag, and a human-readable explanation.</p></div>
+    <div class="card"><div class="tag">01 · Sense</div><div class="big" style="margin:14px 0">2×</div><ul class="sense-list"><li><b>Camera vision</b></li><li><b>Physical sensing</b><ul><li>Distance</li><li>Motion</li><li>Light</li></ul></li></ul></div>
+    <div class="card"><div class="tag">02 · Classify</div><div class="big" style="margin:14px 0">Local</div><ul class="sense-list"><li><b>Every node makes its own decision on-device.</b></li><li><b>No raw data</b><ul></ul></li></ul></div>
+
+    <div class="card"><div class="tag">03 · Fuse</div><div class="big" style="margin:14px 0">1</div><ul class="sense-list"><li><b>Fused state</b><ul><li>Confidence score</li><li>Agreement flag</li><li>Human-readable explanation</li></ul></li></ul></div>
   </div>
 </section>
 
@@ -279,11 +315,14 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <div class="eyebrow rv">Node A · Vision</div>
       <h2 class="rv">It watches. <em>It understands.</em></h2>
       <ul class="chk rv">
-        <li><b>Person detection</b> runs on the board itself: a pre-trained model finds people in every camera frame.</li>
-        <li><b>Motion classifier</b> tracks the person over a 1.5s window — apparent speed, scale change and direction.</li>
-        <li><b>Approaching or moving away</b>, inferred from bounding-box growth, not guesswork.</li>
+        <li><b>Person detection</b> pre-trained model finds people in every camera frame.</li>
+        <li><b>Rule-based motion classifier</b>  1.5s window — apparent speed, scale change and direction.</li>
+        <li><b>Approaching or moving away</b> how fast the bounding box grows or shrinks.</li>
         <li><b>Camera fault check</b> flags a missing device and lights the LED blue.</li>
       </ul>
+      <div class="formula rv"><span class="tag">Confidence score</span>
+        <code>0.4 × detector + 0.6 × motion</code>
+        <small>motion = signal strength · time observed · consistency</small></div>
     </div>
     <div class="viewfinder rv">
       <div class="rec">REC</div>
@@ -300,11 +339,13 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <div class="eyebrow rv">Node B · Physical sensing</div>
       <h2 class="rv">It feels. <em>It measures.</em></h2>
       <ul class="chk rv">
-        <li><b>Distance sensor</b> — ranges up to 1,2 m.</li>
-        <li><b>Movement sensor</b> — any shock beyond 0.05&nbsp;g flags an abnormal disturbance at 0.95 confidence.</li>
+        <li><b>Distance sensor</b> — anything within 0.8&nbsp;m counts as presence.</li>
+        <li><b>Movement sensor</b> — any shock beyond 0.05&nbsp;g flags an abnormal disturbance.</li>
         <li><b>Light sensor</b> — low-light context nudges presence confidence up.</li>
-        <li><b>Sensor-health guards</b> — a disconnected sensor can never fake a disturbance.</li>
       </ul>
+      <div class="formula rv"><span class="tag">Confidence score · set by rule</span>
+        <code>Shock 0.95 · Presence 0.5–1.0 · Idle 0.90</code>
+        <small>presence: closer = higher, +0.05 in the dark</small></div>
     </div>
     <div class="sensor rv" id="sensorDemo">
       <div class="meter"><div class="row"><span>Distance</span><b id="mDist">—</b></div><div class="bar"><i id="bDist"></i></div></div>
@@ -319,9 +360,8 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 <section class="slide" id="s6a" data-title="States">
   <div class="eyebrow rv">One shared language</div>
   <h2 class="rv">Three states. <em>Zero ambiguity.</em></h2>
-  <p class="lead rv">Both nodes speak the same vocabulary, so their outputs are directly comparable — and visible on the hardware itself.</p>
   <div class="grid g3 rv">
-    <div class="card state"><div class="orb s0"></div><div class="tag">State 0</div><h3>Idle</h3><p>Nothing happening. LED off. Baseline confidence 0.90.</p></div>
+    <div class="card state"><div class="orb s0"></div><div class="tag">State 0</div><h3>Idle</h3><p>Nothing happening. LED off. <br>Baseline confidence 0.90.</p></div>
     <div class="card state"><div class="orb s1"></div><div class="tag">State 1</div><h3>Active Presence</h3><p>Someone is here. LED green.<br>Direction reported: approaching or moving away.</p></div>
     <div class="card state"><div class="orb s2"></div><div class="tag">State 2</div><h3>Abnormal Disturbance</h3><p>Something is wrong. LED red.<br>Always wins a disagreement.</p></div>
   </div>
@@ -349,6 +389,11 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <div class="note" id="oNote"></div>
     </div>
   </div>
+  <div class="rules rv">
+    <div><span class="tag ok">Agree</span><b>Same state</b><small>confidence = average of both</small></div>
+    <div><span class="tag" style="color:var(--amber)">Disagree</span><b>More severe state wins</b><small>with that node's confidence</small></div>
+    <div><span class="tag" style="color:var(--muted)">One offline</span><b>Use the other node</b><small>marked as degraded</small></div>
+  </div>
 </section>
 
 <!-- 10 PROTOCOL -->
@@ -357,7 +402,7 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     <div>
       <div class="eyebrow rv">The contract</div>
       <h2 class="rv">One packet. <em>Any node.</em></h2>
-      <p class="lead rv">A deliberately tiny JSON schema. The fusion layer only needs <span class="mono" style="color:var(--accent)">state</span> and <span class="mono" style="color:var(--accent)">confidence</span> — so adding a third node is a configuration change, not a rewrite.</p>
+      <p class="lead rv">A tiny JSON schema. The fusion layer only needs <span class="mono" style="color:var(--accent)">state</span> and <span class="mono" style="color:var(--accent)">confidence</span> — so a new node only has to send the same packet.</p>
     </div>
 <pre class="code rv"><span class="c">// sensors/node_a/state</span>
 {
@@ -377,9 +422,9 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   <div class="eyebrow rv">What fought back</div>
   <h2 class="rv">The hard parts, <em>and how we fixed them.</em></h2>
   <div class="grid g3 rv">
-    <div class="card sm"><div class="tag x">Camera classes</div><h3>Camera detector</h3><p>Telling approaching from moving away took many rounds of walking at the camera. We landed on a 1.5 s window and a 3%/s change in box size.</p></div>
-    <div class="card sm"><div class="tag x">Modulino sensors</div><h3>Movement &amp; Light sensor</h3><p>At first they missed changes in light and motion. Physical tests found the right numbers: under 50 lux, a 0.05 motion change, 40 mm/s for direction.</p></div>
-    <div class="card sm"><div class="tag x">Silence</div><h3>Dead or just quiet?</h3><p>A node with nothing to report looked broken. Now both nodes check in every 500 ms, even when idle. Five seconds of silence marks a node offline.</p></div>
+    <div class="card sm challenge-card"><h3>Vision node</h3><div class="challenge-copy"><span><b>Issue</b> Distinguish whether a person was approaching or moving away</span><span><b>Solution</b><ul><li><strong class="number">1.5 seconds</strong> of tracking to observe movement</li><li><strong class="number">3% per second</strong> change in bounding-box size to estimate direction</li></ul></span></div></div>
+    <div class="card sm challenge-card"><h3>Movement and light sensors</h3><div class="challenge-copy"><span><b>Issue</b> The sensors initially missed subtle changes in light and motion.</span><span><b>Solution</b><ul><li>Below <strong class="number">50 lux</strong> for low-light context</li><li><strong class="number">0.05 g</strong> for motion</li><li><strong class="number">40 mm/s</strong> for direction</li></ul></span></div></div>
+    <div class="card sm challenge-card"><h3>Dead or just quiet?</h3><div class="challenge-copy"><span><b>Issue</b> A node with no event to report was indistinguishable from a failed node.</span><span><b>Solution</b><ul><li>Heartbeat every <strong class="number">500 milliseconds</strong>, even when idle</li><li><strong class="number">5 seconds</strong> without a heartbeat marks a node offline</li></ul></span></div></div>
   </div>
 </section>
 
@@ -430,7 +475,7 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <text x="912" y="168" fill="#37e6ff" font-size="13" letter-spacing="2">FUSED VERDICT</text>
       <text x="912" y="196" fill="#e8eefc" font-size="26" font-weight="500" style="font-family:'Space Grotesk',sans-serif">Active presence</text>
       <text x="856" y="248" fill="#8c9ab8" font-size="15">Confidence: 0.89 · Nodes agree</text>
-      <text x="856" y="280" fill="#8c9ab8" font-size="15">→ lights on, no alert</text>
+      <text x="856" y="280" fill="#8c9ab8" font-size="15">→ e.g. lights on, no alert</text>
     </svg>
   </div>
   <div class="grid g3 rv" style="margin-top:22px">
@@ -439,27 +484,24 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   </div>
 </section>
 
-<!-- APPLICATIONS -->
-<section class="slide" id="sapps" data-title="Applications">
-  <div class="eyebrow rv">The vision</div>
-  <h2 class="rv">Anywhere devices <em>must agree.</em></h2>
-  <p class="lead rv">Concur is a small version of a bigger idea: cheap devices combining small messages into one decision you can trust.</p>
-  <div class="grid g3 rv">
-    <div class="card sm"><div class="tag">01 · Safety</div><h3>Care and safety</h3><p>Spot a fall for someone living alone, or a person entering a machine zone, even when one sensor is blocked or fails.</p></div>
-    <div class="card sm"><div class="tag">02 · Security</div><h3>Fewer false alarms</h3><p>Confirm a real intrusion with two independent senses before anyone gets called.</p></div>
-    <div class="card sm"><div class="tag">03 · Spaces</div><h3>Smart buildings</h3><p>Know which rooms are occupied and how people flow, shared as tiny numbers, not video.</p></div>
+<!-- VISION + ROADMAP -->
+<section class="slide" id="s10" data-title="Vision">
+  <div class="eyebrow rv">Future direction · not built yet</div>
+  <h2 class="rv">Agreement could become <em>a label.</em></h2>
+  <p class="lead rv">Physical AI needs more labeled real-world data.</strong></p>
+  <div class="grid g3 rv" style="margin-top:28px">
+    <div class="card sm"><div class="tag ok">Agree → Candidate label</div><h3>Pre-labeled moments</h3></div>
+    <div class="card sm"><div class="tag" style="color:var(--amber)">Disagreement → Human review</div><h3>Cases worth a look</h3></div>
+    <div class="card sm"><div class="tag">Capture → Events only</div><h3>Events, not streams</h3></div>
   </div>
-</section>
-
-<!-- 12 ROADMAP + CLOSE -->
-<section class="slide" id="s10" data-title="Roadmap">
-  <div class="eyebrow rv">Where we are · where we go</div>
-  <h2 class="rv">From prototype to <em>platform.</em></h2>
-  <div class="tl rv">
-    <div class="done"><h4>Two live nodes</h4><p>Vision and sensor nodes classifying on-device.</p></div>
-    <div class="done"><h4>Fusion dashboard</h4><p>Real-time fused verdict over MQTT with history.</p></div>
-    <div><h4>Smarter fusion</h4><p>Weighted, confidence-aware rules beyond "escalate on disagreement".</p></div>
-    <div><h4>More nodes</h4><p>Additional sensors and rooms on the same packet contract.</p></div>
+  <div class="apps rv">
+    <br>
+    <div class="tag">Possible uses · each could collect data while it works</div>
+    <div class="apps-row">
+      <div><b>Care &amp; safety</b><span>Flag sudden movement near a person or a machine</span></div>
+      <div><b>Security</b><span>Alert only when two senses agree, to cut false alarms</span></div>
+      <div><b>Smart buildings</b><span>Occupancy as tiny numbers, not video</span></div>
+    </div>
   </div>
 </section>
 
