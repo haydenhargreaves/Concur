@@ -22,6 +22,11 @@ TOPIC = "sensors/node_a/state"
 CAMERA_FAULT_LED = (0, 0, 1)  # blue
 CAMERA_DEVICE_GLOB = "/dev/v4l/by-id/*-video-index0"
 
+# The detector drops the person for a frame or two now and then (partly out of
+# frame, confidence dipping under the threshold). Only report idle once nobody
+# has been seen for this long, so those gaps don't flicker presence -> idle.
+PERSON_LOST_SECONDS = 1.5
+
 
 def _set_status_led(state: int | None) -> None:
     Leds.set_led1_color(*STATE_LED_COLORS.get(state, (0, 0, 0)))
@@ -78,6 +83,7 @@ class MotionClassifier:
     FULL_DIRECTION_RATE = 0.10
     FULL_OBSERVATION_SECONDS = 0.5
     CONSISTENCY_SAMPLES = 5
+    ABNORMAL_MIN_COUNT = 4
 
     def __init__(self) -> None:
         self._samples: deque[tuple[float, float, float, float, float]] = deque()
@@ -92,7 +98,6 @@ class MotionClassifier:
         scale = (detection.w * detection.h) ** 0.5
         self._samples.append((now, center_x, center_y, scale, detection.confidence))
 
-        # Preserve two samples even when detector callbacks are slower than the window.
         while (
             len(self._samples) > self.MIN_SAMPLES
             and now - self._samples[0][0] > self.WINDOW_SECONDS
@@ -123,7 +128,6 @@ class MotionClassifier:
         end_scale = median(sample[3] for sample in end)
         average_scale = median(sample[3] for sample in samples)
 
-        # Normalize image motion by the person's size so near and far subjects compare fairly.
         center_speed = (
             hypot(end_x - start_x, end_y - start_y) / average_scale / duration
         )
@@ -134,11 +138,16 @@ class MotionClassifier:
         elif scale_rate < -self.SCALE_DIRECTION_RATE:
             candidate = "moving_away"
         elif center_speed < self.IDLE_CENTER_SPEED:
-            candidate = "idle"
+            candidate = "still"
         else:
             candidate = "abnormal"
 
         self._recent_candidates.append(candidate)
+        if (
+            candidate == "abnormal"
+            and self._recent_candidates.count("abnormal") < self.ABNORMAL_MIN_COUNT
+        ):
+            candidate = "still"
         consistency = self._recent_candidates.count(candidate) / len(
             self._recent_candidates
         )
@@ -150,7 +159,7 @@ class MotionClassifier:
                 / (self.FULL_DIRECTION_RATE - self.SCALE_DIRECTION_RATE),
                 1.0,
             )
-        elif candidate == "idle":
+        elif candidate == "still":
             signal_strength = 1.0 - max(
                 center_speed / self.IDLE_CENTER_SPEED,
                 abs(scale_rate) / self.SCALE_DIRECTION_RATE,
@@ -166,8 +175,6 @@ class MotionClassifier:
             )
             signal_strength = motion_strength * direction_ambiguity
 
-        # Blend evidence instead of multiplying it so several partial signals do not
-        # collapse an otherwise correct classification to an unrealistically low score.
         motion_confidence = (
             0.50 * max(signal_strength, 0.0)
             + 0.25 * observation_quality
@@ -181,8 +188,8 @@ class MotionClassifier:
             2,
         )
 
-        if candidate == "idle":
-            state, direction = 0, 2
+        if candidate == "still":
+            state, direction = 1, 2
         elif candidate == "approaching":
             state, direction = 1, 0
         elif candidate == "moving_away":
@@ -229,7 +236,7 @@ class Detection:
 
 motion_classifier = MotionClassifier()
 _heartbeat_lock = Lock()
-_person_seen_since_heartbeat = False
+_last_person_seen = float("-inf")
 
 
 def _publish_packet(
@@ -252,12 +259,9 @@ def _publish_packet(
 
 
 def publish_heartbeat(conn) -> NodeAPacket | None:
-    """Publish an idle result when the camera saw no person this interval."""
-    global _person_seen_since_heartbeat
-
+    """Publish an idle result once the camera has seen no person for PERSON_LOST_SECONDS."""
     with _heartbeat_lock:
-        person_seen = _person_seen_since_heartbeat
-        _person_seen_since_heartbeat = False
+        person_seen = monotonic() - _last_person_seen < PERSON_LOST_SECONDS
 
     if not _camera_present():
         return _publish_packet(
@@ -285,14 +289,12 @@ def process_detection(
         for obj in class_objects
     ]
     if not objects:
-        _set_status_led(None)
         return None
 
-    global _person_seen_since_heartbeat
+    global _last_person_seen
     with _heartbeat_lock:
-        _person_seen_since_heartbeat = True
+        _last_person_seen = monotonic()
 
-    # The application assumes one person; use the strongest box if the detector emits duplicates.
     obj = max(objects, key=lambda item: item["confidence"])
     bbox = obj["bounding_box_xyxy"]
     model_confidence = obj["confidence"]
