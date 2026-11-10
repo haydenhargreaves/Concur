@@ -67,7 +67,7 @@ IDLE_DECISION: MotionDecision = {
 
 
 class MotionClassifier:
-    """Classifies the apparent movement of the one person in the camera view."""
+    """Classifies the presence and apparent movement of one person in view."""
 
     WINDOW_SECONDS = 1.50
     MIN_WINDOW_SECONDS = 0.05
@@ -134,7 +134,7 @@ class MotionClassifier:
         elif scale_rate < -self.SCALE_DIRECTION_RATE:
             candidate = "moving_away"
         elif center_speed < self.IDLE_CENTER_SPEED:
-            candidate = "idle"
+            candidate = "stationary"
         else:
             candidate = "abnormal"
 
@@ -150,7 +150,7 @@ class MotionClassifier:
                 / (self.FULL_DIRECTION_RATE - self.SCALE_DIRECTION_RATE),
                 1.0,
             )
-        elif candidate == "idle":
+        elif candidate == "stationary":
             signal_strength = 1.0 - max(
                 center_speed / self.IDLE_CENTER_SPEED,
                 abs(scale_rate) / self.SCALE_DIRECTION_RATE,
@@ -181,8 +181,8 @@ class MotionClassifier:
             2,
         )
 
-        if candidate == "idle":
-            state, direction = 0, 2
+        if candidate == "stationary":
+            state, direction = 1, 2
         elif candidate == "approaching":
             state, direction = 1, 0
         elif candidate == "moving_away":
