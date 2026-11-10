@@ -201,6 +201,47 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .sense-list ul{margin:8px 0 0 24px;display:grid;gap:5px;color:var(--muted)}
 .sense-list ul li{position:relative;padding-left:16px}
 .sense-list ul li::before{content:"";position:absolute;left:0;top:.65em;width:6px;height:1px;background:var(--accent)}
+/* results slide */
+#sresults{padding-top:72px;padding-bottom:56px}
+#sresults .eyebrow{font-size:18px;margin-bottom:16px}
+#sresults h2{font-size:clamp(44px,4.8vw,76px);max-width:none}
+#sresults .grid{margin-top:30px;gap:24px}
+#sresults .card{padding:26px 30px}
+#sresults .tag{font-size:18px;white-space:nowrap}
+#sresults .res-head{margin-bottom:10px;gap:4px 14px;flex-wrap:wrap}
+#sresults .res-head small{font-size:16px;white-space:nowrap;margin-left:auto}
+.res-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px}
+.res-head small{font:14px var(--mono);color:var(--muted);letter-spacing:.08em}
+.hbar{display:grid;grid-template-columns:minmax(150px,16ch) 1fr 4.2ch;align-items:center;gap:14px;margin-top:12px;font-size:19px;font-weight:300}
+.hbar span{color:var(--muted)}
+.hbar b{font:500 20px var(--mono);text-align:right}
+.hbar .track{height:12px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden}
+.hbar .track i{display:block;height:100%;width:0;border-radius:6px;background:var(--c,var(--accent));transition:width 1.2s cubic-bezier(.2,.7,.2,1) .35s}
+.slide.in .hbar .track i{width:var(--w)}
+.hbar.hi span{color:var(--text)}
+.res-foot{margin-top:14px;font:15px var(--mono);color:var(--muted);letter-spacing:.04em;line-height:1.5}
+.res-foot b{color:var(--green);font-weight:500}
+.res-rules{margin:6px 0 0 20px;display:grid;gap:3px}
+.res-rules li{padding-left:4px}
+.res-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin:20px auto 0;width:100%}
+.res-stats div{padding:16px 20px;border:1px solid var(--line);border-radius:12px;background:rgba(5,9,18,.55)}
+.res-stats b{display:block;font:300 clamp(30px,2.8vw,44px)/1.1 var(--sans);letter-spacing:-.02em}
+.res-stats span{font:14px var(--mono);color:var(--muted);letter-spacing:.06em;line-height:1.4;display:block;margin-top:4px}
+.res-limits{margin-top:18px;font-size:18px;color:var(--muted);font-weight:300;line-height:1.5}
+.res-limits b{font:500 14px var(--mono);letter-spacing:.18em;color:var(--amber);text-transform:uppercase;margin-right:10px}
+#sresults .hbar{grid-template-columns:1fr auto;grid-template-areas:"label value" "track track";gap:6px 14px;margin-top:18px;font-size:26px}
+#sresults .hbar span{grid-area:label}
+#sresults .hbar b{grid-area:value;font-size:28px}
+#sresults .hbar .track{grid-area:track;height:16px;border-radius:8px}
+#sresults .hbar .track i{border-radius:8px}
+#sresults .res-foot{margin-top:18px;font-size:18px;line-height:1.5}
+#sresults .res-stats{grid-template-columns:repeat(2,minmax(0,560px));justify-content:center;gap:24px;margin-top:24px}
+#sresults .res-stats div{padding:22px 28px;text-align:center}
+#sresults .res-stats b{font-size:clamp(42px,3.3vw,60px)}
+#sresults .res-stats span{font-size:19px;margin-top:6px}
+@media(max-height:900px),(max-width:1400px){#sresults{padding-top:56px;padding-bottom:56px}#sresults .eyebrow{font-size:17px;margin-bottom:12px}#sresults h2{font-size:44px}#sresults .grid{margin-top:18px;gap:18px}#sresults .card{padding:18px 22px}#sresults .tag{font-size:17px}#sresults .res-head small{font-size:15px}#sresults .hbar{font-size:23px;margin-top:12px;gap:4px 12px}#sresults .hbar b{font-size:24px}#sresults .hbar .track{height:14px}#sresults .res-foot{font-size:16px;margin-top:12px}#sresults .res-stats{margin-top:16px;gap:16px}#sresults .res-stats div{padding:14px 20px}#sresults .res-stats b{font-size:40px}#sresults .res-stats span{font-size:16px}}
+@media(max-width:900px){#sresults .hbar{grid-template-columns:1fr auto}}
+@media(max-width:900px){.res-stats{grid-template-columns:1fr 1fr}.hbar{grid-template-columns:1fr 3fr 4.2ch;font-size:16px}}
 @media(max-width:900px){
   .g2,.g3,.g4,.split,.sim,.tl,.tree{grid-template-columns:1fr}
   #dots,header.top .hint{display:none}
@@ -484,9 +525,46 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   </div>
 </section>
 
+<!-- RESULTS (eval_results/summary.md · examples/evaluate.py) -->
+<section class="slide" id="sresults" data-title="Results">
+  <div class="eyebrow rv">Results · 10 trials · 3,794 labeled samples </div>
+  <h2 class="rv">What the trials <em>measured.</em></h2>
+  <div class="grid g3 rv">
+    <div class="card">
+      <div class="res-head"><div class="tag">accuracy</div><small> 1,129 samples</small></div>
+      <div class="hbar"><span>Node A · camera</span><div class="track"><i style="--w:71%;--c:var(--accent)"></i></div><b>71%</b></div>
+      <div class="hbar"><span>Node B · sensors</span><div class="track"><i style="--w:59%;--c:var(--accent2)"></i></div><b>59%</b></div>
+      <div class="hbar hi"><span>Fused</span><div class="track"><i style="--w:91%;--c:linear-gradient(90deg,var(--accent),var(--green))"></i></div><b class="ok">91%</b></div>
+    </div>
+    <div class="card">
+      <div class="res-head"><div class="tag">Disagreement</div><small>626 / 1,129 samples</small></div>
+      <div class="hbar"><span>Node A right</span><div class="track"><i style="--w:61%;--c:var(--accent)"></i></div><b>61%</b></div>
+      <div class="hbar"><span>Node B right</span><div class="track"><i style="--w:39%;--c:var(--accent2)"></i></div><b>39%</b></div>
+      <div class="hbar hi"><span>Fused right (605 / 626) </span><div class="track"><i style="--w:97%;--c:linear-gradient(90deg,var(--accent),var(--green))"></i></div><b class="ok">97%</b></div>
+      <div class="res-foot">Rule:
+        <ul class="res-rules">
+          <li>Agree → average confidence</li>
+          <li>Disagree → more severe state</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="res-head"><div class="tag">One node lost</div></div>
+      <div class="hbar"><span>Both nodes</span><div class="track"><i style="--w:89%;--c:var(--green)"></i></div><b>89%</b></div>
+      <div class="hbar"><span>Losing node A · simulated</span><div class="track"><i style="--w:87%;--c:var(--green)"></i></div><b>87%</b></div>
+      <div class="hbar"><span>Losing node B · simulated</span><div class="track"><i style="--w:85%;--c:var(--green)"></i></div><b>85%</b></div>
+      <div class="hbar hi"><span>Node A unplugged</span><div class="track"><i style="--w:89%;--c:var(--green)"></i></div><b class="ok">89%</b></div>
+    </div>
+  </div>
+  <div class="res-stats rv">
+    <div><b>91%</b><span>fused accuracy</span></div>
+    <div><b>+20.0 pts</b><span>fused over the better single node</span></div>
+  </div>
+</section>
+
 <!-- VISION + ROADMAP -->
 <section class="slide" id="s10" data-title="Vision">
-  <div class="eyebrow rv">Future direction · not built yet</div>
+  <div class="eyebrow rv">Future direction</div>
   <h2 class="rv">Agreement could become <em>a label.</em></h2>
   <p class="lead rv">Physical AI needs more labeled real-world data.</strong></p>
   <div class="grid g3 rv" style="margin-top:28px">
@@ -498,9 +576,9 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     <br>
     <div class="tag">Possible uses · each could collect data while it works</div>
     <div class="apps-row">
-      <div><b>Care &amp; safety</b><span>Flag sudden movement near a person or a machine</span></div>
-      <div><b>Security</b><span>Alert only when two senses agree, to cut false alarms</span></div>
-      <div><b>Smart buildings</b><span>Occupancy as tiny numbers, not video</span></div>
+      <div><b>Care &amp; Safety</b><span>Flag sudden movement near a person/machine</span></div>
+      <div><b>Security</b><span>Alert only when two senses agree → fewer false alarms</span></div>
+      <div><b>Smart buildings</b><span>Track occupancy without sending video</span></div>
     </div>
   </div>
 </section>
