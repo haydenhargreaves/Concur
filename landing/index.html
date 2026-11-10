@@ -221,6 +221,8 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .hbar.hi span{color:var(--text)}
 .res-foot{margin-top:14px;font:15px var(--mono);color:var(--muted);letter-spacing:.04em;line-height:1.5}
 .res-foot b{color:var(--green);font-weight:500}
+.res-rules{margin:6px 0 0 20px;display:grid;gap:3px}
+.res-rules li{padding-left:4px}
 .res-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin:20px auto 0;width:100%}
 .res-stats div{padding:16px 20px;border:1px solid var(--line);border-radius:12px;background:rgba(5,9,18,.55)}
 .res-stats b{display:block;font:300 clamp(30px,2.8vw,44px)/1.1 var(--sans);letter-spacing:-.02em}
@@ -538,8 +540,13 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <div class="res-head"><div class="tag">Disagreement</div><small>626 / 1,129 samples</small></div>
       <div class="hbar"><span>Node A right</span><div class="track"><i style="--w:61%;--c:var(--accent)"></i></div><b>61%</b></div>
       <div class="hbar"><span>Node B right</span><div class="track"><i style="--w:39%;--c:var(--accent2)"></i></div><b>39%</b></div>
-      <div class="hbar hi"><span>Fused right</span><div class="track"><i style="--w:97%;--c:linear-gradient(90deg,var(--accent),var(--green))"></i></div><b class="ok">97%</b></div>
-      <div class="res-foot"><b>605 / 626</b>. Rule: agree → average confidence; disagree → take the more severe state.</div>
+      <div class="hbar hi"><span>Fused right (605 / 626) </span><div class="track"><i style="--w:97%;--c:linear-gradient(90deg,var(--accent),var(--green))"></i></div><b class="ok">97%</b></div>
+      <div class="res-foot">Rule:
+        <ul class="res-rules">
+          <li>Agree → average confidence</li>
+          <li>Disagree → more severe state</li>
+        </ul>
+      </div>
     </div>
     <div class="card">
       <div class="res-head"><div class="tag">One node lost</div></div>
@@ -557,7 +564,7 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 
 <!-- VISION + ROADMAP -->
 <section class="slide" id="s10" data-title="Vision">
-  <div class="eyebrow rv">Future direction · not built yet</div>
+  <div class="eyebrow rv">Future direction</div>
   <h2 class="rv">Agreement could become <em>a label.</em></h2>
   <p class="lead rv">Physical AI needs more labeled real-world data.</strong></p>
   <div class="grid g3 rv" style="margin-top:28px">
@@ -569,9 +576,9 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     <br>
     <div class="tag">Possible uses · each could collect data while it works</div>
     <div class="apps-row">
-      <div><b>Care &amp; safety</b><span>Flag sudden movement near a person or a machine</span></div>
-      <div><b>Security</b><span>Alert only when two senses agree, to cut false alarms</span></div>
-      <div><b>Smart buildings</b><span>Occupancy as tiny numbers, not video</span></div>
+      <div><b>Care &amp; Safety</b><span>Flag sudden movement near a person/machine</span></div>
+      <div><b>Security</b><span>Alert only when two senses agree → fewer false alarms</span></div>
+      <div><b>Smart buildings</b><span>Track occupancy without sending video</span></div>
     </div>
   </div>
 </section>
