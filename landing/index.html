@@ -40,7 +40,6 @@ kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;paddi
 
 /* slides */
 section.slide{position:relative;z-index:5;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;padding:88px max(36px,6vw) 72px}
-#s2{padding-bottom:120px}
 .eyebrow{font:500 16px var(--mono);letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px}
 .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
 h1,h2{font-weight:500;letter-spacing:-.03em;line-height:1.02}
@@ -116,34 +115,17 @@ ul.chk li::before{content:"";position:absolute;left:0;top:7px;width:14px;height:
 .bar{height:6px;background:rgba(255,255,255,.07);border-radius:6px;margin-top:12px;overflow:hidden}
 .bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
 
-/* states */
-.state{text-align:left}
-.orb{width:68px;height:68px;border-radius:50%;margin-bottom:14px;position:relative}
-.orb.s0{background:#222a3a;box-shadow:inset 0 0 0 1px #3a4660}
-.orb.s1{background:var(--green);box-shadow:0 0 34px var(--green);animation:glow 2.4s infinite}
-.orb.s2{background:var(--red);box-shadow:0 0 34px var(--red);animation:glow 1s infinite}
-@keyframes glow{50%{filter:brightness(.6)}}
-
-/* simulator */
-.sim{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:18px;margin-top:38px;align-items:stretch}
-.seg{display:grid;gap:8px;margin-top:14px}
-.seg button{font:500 18px var(--mono);letter-spacing:.06em;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;transition:.2s}
-.seg button:hover{border-color:var(--accent);color:var(--text)}
-.seg button.on{border-color:var(--accent);color:var(--text);background:rgba(55,230,255,.1);box-shadow:0 0 18px rgba(55,230,255,.18)}
-.range{margin-top:16px;font:15px var(--mono);color:var(--muted);letter-spacing:.14em}
-.range input{width:100%;accent-color:var(--accent);margin-top:8px}
-.out{display:flex;flex-direction:column;justify-content:center;text-align:center;border-color:rgba(55,230,255,.4);box-shadow:0 0 50px rgba(55,230,255,.08)}
-.out .orb{margin:0 auto 16px;width:78px;height:78px;transition:.4s}
-.out .orb.off{background:#222a3a;box-shadow:none;animation:none}
-.out .verdict{font:300 clamp(36px,4vw,60px)/1.1 var(--sans);letter-spacing:-.03em}
-.out .conf{font:500 19px var(--mono);color:var(--accent);margin-top:10px;letter-spacing:.14em}
-.out .note{margin-top:19px;font-size:18px;color:var(--muted);line-height:1.5;min-height:42px}
-.badge{display:inline-block;font:17px var(--mono);letter-spacing:.18em;padding:5px 11px;border-radius:999px;margin-top:6px}
-.badge.agree{color:var(--green);border:1px solid var(--green)}.badge.dis{color:var(--amber);border:1px solid var(--amber)}.badge.na{color:var(--muted);border:1px solid var(--muted)}
-
 /* code */
 pre.code{font:19px/1.75 var(--mono);color:#b8c7e8;background:rgba(5,9,18,.8);border:1px solid var(--line);border-radius:14px;padding:26px;overflow:auto}
 pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}pre .c{color:#5b6b8c}
+/* architecture: diagram + packet (old protocol slide) side by side */
+.arch-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;margin-top:30px}
+.arch-row .arch{margin-top:0;max-width:none}
+.packet{display:grid;gap:12px}
+.packet pre.code{font-size:clamp(13px,1vw,19px);padding:22px}
+.packet small{font:15px var(--mono);color:var(--muted);letter-spacing:.04em}
+.packet small b{color:var(--accent);font-weight:500}
+@media(max-width:1100px){.arch-row{grid-template-columns:1fr}}
 
 /* timeline */
 .tl{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px;position:relative}
@@ -157,15 +139,12 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .closing h2{max-width:14ch;font-size:clamp(56px,8vw,128px)}
 .closing .cta{justify-content:center}
 
-.ans{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
 .model{width:100%;height:42vh;min-height:280px;background:transparent;--poster-color:transparent;filter:drop-shadow(0 0 40px rgba(55,230,255,.18))}
-@media(max-width:900px){.ans{grid-template-columns:1fr}}
-/* slide 3: shorter model + compact cards so the row clears the bottom edge */
-#s2{padding-top:72px;padding-bottom:56px}
-#s2 .model{height:34vh;min-height:240px}
-#s2 .grid{margin-top:20px}
-#s2 .card{padding:22px 26px}
-#s2 .card .big{margin:8px 0!important;font-size:clamp(44px,5vw,72px)}
+/* hero: copy left, 3D board right */
+.hero-row{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:40px;align-items:center;width:100%}
+#s0 .model{height:60vh;min-height:320px}
+#s0 h1{font-size:clamp(56px,8.5vw,150px)}
+@media(max-width:900px){.hero-row{grid-template-columns:1fr}#s0 .model{height:40vh}}
 .credit{font:500 17px var(--mono);letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:34px}
 .credit b{color:var(--text);font-weight:500}
 .tree{font:17px/1.7 var(--mono);color:var(--muted);margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
@@ -175,16 +154,12 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .apps-row b{display:block;font-weight:500;font-size:22px;margin-bottom:4px}
 .apps-row span{font-size:18px;color:var(--muted);font-weight:300;line-height:1.45}
 @media(max-width:900px){.apps-row{grid-template-columns:1fr}}
-/* confidence formula (Node A/B) + fusion rules (slide 8) */
+/* confidence formula (Node A/B) */
 .formula{margin-top:26px;padding:16px 20px;border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:10px;background:rgba(5,9,18,.55);display:grid;gap:6px;max-width:640px}
 .formula small{white-space:nowrap}
 .formula code{font:500 20px var(--mono);color:var(--text)}
 .formula small{font:16px var(--mono);color:var(--muted)}
-.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
-.rules div{display:grid;gap:4px;padding:14px 18px;border:1px solid var(--line);border-radius:10px;background:rgba(5,9,18,.55)}
-.rules b{font-weight:500;font-size:20px}
-.rules small{font:15px var(--mono);color:var(--muted)}
-@media(max-width:900px){.rules{grid-template-columns:1fr}.formula small{white-space:normal}}
+@media(max-width:900px){.formula small{white-space:normal}}
 .sm.card{padding:24px}.sm.card h3{font-size:26px}.sm.card p{font-size:19px}
 .challenge-copy{display:grid;gap:14px}
 .challenge-card .challenge-copy{font-size:21px;line-height:1.5}
@@ -243,7 +218,7 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 @media(max-width:900px){#sresults .hbar{grid-template-columns:1fr auto}}
 @media(max-width:900px){.res-stats{grid-template-columns:1fr 1fr}.hbar{grid-template-columns:1fr 3fr 4.2ch;font-size:16px}}
 @media(max-width:900px){
-  .g2,.g3,.g4,.split,.sim,.tl,.tree{grid-template-columns:1fr}
+  .g2,.g3,.g4,.split,.tl,.tree{grid-template-columns:1fr}
   #dots,header.top .hint{display:none}
   header.top{padding:14px 20px}
   section.slide{padding:84px 20px 70px}
@@ -260,14 +235,19 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 
 <!-- 01 HERO -->
 <section class="slide" id="s0" data-title="Intro">
+  <div class="hero-row">
+  <div class="hero-copy">
   <div class="logo rv"><i></i>CONCUR</div>
   <h1 class="rv"><span>Two senses.</span><span><em>One verdict.</em></span></h1>
-  <div class="cta rv"><a class="btn solid" href="#s1">Begin the tour</a><a class="btn" href="#s6">Try the fusion engine</a><a class="btn" href="/" target="_blank" rel="noopener">Live dashboard ↗</a></div>
+  <div class="cta rv"><a class="btn solid" href="#s1">Begin the tour</a><a class="btn" href="/" target="_blank" rel="noopener">Live dashboard ↗</a></div>
   <div class="stats rv">
     <div><b>2</b><span>Independent edge nodes</span></div>
     <div><b>3</b><span>Clear states</span></div>
     <div><b>500ms</b><span>Heartbeat</span></div>
     <div><b>1</b><span>Fused verdict</span></div>
+  </div>
+  </div>
+  <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate auto-rotate-delay="0" camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
   </div>
 </section>
 
@@ -283,27 +263,11 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   <p class="lead rv" style="margin-top:34px"><strong>The challenge:</strong> gain the reliability of many views without paying for them in communication.</p>
 </section>
 
-<!-- 03 SOLUTION -->
-<section class="slide" id="s2" data-title="Solution">
-  <div class="eyebrow rv">Our answer</div>
-  <div class="ans">
-    <div>
-      <h2 class="rv">Decide at the edge. <em>Agree in the cloud.</em></h2>
-    </div>
-    <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
-  </div>
-  <div class="grid g3 rv">
-    <div class="card"><div class="tag">01 · Sense</div><div class="big" style="margin:14px 0">2×</div><ul class="sense-list"><li><b>Camera vision</b></li><li><b>Physical sensing</b><ul><li>Distance</li><li>Motion</li><li>Light</li></ul></li></ul></div>
-    <div class="card"><div class="tag">02 · Classify</div><div class="big" style="margin:14px 0">Local</div><ul class="sense-list"><li><b>Every node makes its own decision on-device.</b></li><li><b>No raw data</b><ul></ul></li></ul></div>
-
-    <div class="card"><div class="tag">03 · Fuse</div><div class="big" style="margin:14px 0">1</div><ul class="sense-list"><li><b>Fused state</b><ul><li>Confidence score</li><li>Agreement flag</li><li>Human-readable explanation</li></ul></li></ul></div>
-  </div>
-</section>
-
 <!-- 04 ARCHITECTURE -->
 <section class="slide" id="s3" data-title="Architecture">
-  <div class="eyebrow rv">System architecture</div>
+  <div class="eyebrow rv">Our Answer</div>
   <h2 class="rv">Small packets. <em>Big picture.</em></h2>
+  <div class="arch-row">
   <div class="arch rv">
     <svg viewBox="0 0 1200 470" fill="none">
       <defs>
@@ -344,8 +308,18 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       </g>
       <g fill="#37e6ff" font-size="14" letter-spacing="2" text-anchor="middle"><text x="768" y="182">LIVE STREAM</text></g>
       <g fill="#3dff9a"><circle cx="324" cy="36" r="6"/><circle cx="324" cy="246" r="6"/></g>
-      <text x="10" y="462" fill="#8c9ab8" font-size="16">● Onboard LED on each node shows its local decision, independent of the dashboard</text>
     </svg>
+  </div>
+  <div class="packet rv">
+<pre class="code">
+{
+  <span class="k">"node"</span>:       <span class="s">"node_a"</span>,
+  <span class="k">"state"</span>:      <span class="n">1</span>,   <span class="c">// 0 idle · 1 presence · 2 abnormal</span>
+  <span class="k">"direction"</span>:  <span class="n">0</span>,   <span class="c">// 0 approaching · 1 away </span>
+  <span class="k">"confidence"</span>: <span class="n">0.92</span>,
+  <span class="k">"health"</span>:     <span class="s">"HEALTHY"</span>
+}</pre>
+  </div>
   </div>
 </section>
 
@@ -394,67 +368,6 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       <div class="meter"><div class="row"><span>Ambient light</span><b id="mLux">—</b></div><div class="bar"><i id="bLux"></i></div></div>
       <div class="meter"><div class="row"><span>Local verdict</span><b id="mState">—</b></div></div>
     </div>
-  </div>
-</section>
-
-<!-- 07 STATES -->
-<section class="slide" id="s6a" data-title="States">
-  <div class="eyebrow rv">One shared language</div>
-  <h2 class="rv">Three states. <em>Zero ambiguity.</em></h2>
-  <div class="grid g3 rv">
-    <div class="card state"><div class="orb s0"></div><div class="tag">State 0</div><h3>Idle</h3><p>Nothing happening. LED off. <br>Baseline confidence 0.90.</p></div>
-    <div class="card state"><div class="orb s1"></div><div class="tag">State 1</div><h3>Active Presence</h3><p>Someone is here. LED green.<br>Direction reported: approaching or moving away.</p></div>
-    <div class="card state"><div class="orb s2"></div><div class="tag">State 2</div><h3>Abnormal Disturbance</h3><p>Something is wrong. LED red.<br>Always wins a disagreement.</p></div>
-  </div>
-</section>
-
-<!-- 08 FUSION SIM -->
-<section class="slide" id="s6" data-title="Fusion">
-  <div class="eyebrow rv">Fusion engine · live</div>
-  <h2 class="rv">Set the inputs. <em>Watch it decide.</em></h2>
-  <div class="sim rv">
-    <div class="card"><div class="tag">Node A · Vision</div>
-      <div class="seg" id="segA"></div>
-      <div class="range">CONFIDENCE <span id="cA">0.90</span><input type="range" min="50" max="99" value="90" id="rA"></div>
-    </div>
-    <div class="card"><div class="tag">Node B · Sensors</div>
-      <div class="seg" id="segB"></div>
-      <div class="range">CONFIDENCE <span id="cB">0.90</span><input type="range" min="50" max="99" value="90" id="rB"></div>
-    </div>
-    <div class="card out">
-      <div class="orb off" id="oOrb"></div>
-      <div class="tag">Fused verdict</div>
-      <div class="verdict" id="oState">—</div>
-      <div class="conf" id="oConf">—</div>
-      <div><span class="badge na" id="oBadge">—</span></div>
-      <div class="note" id="oNote"></div>
-    </div>
-  </div>
-  <div class="rules rv">
-    <div><span class="tag ok">Agree</span><b>Same state</b><small>confidence = average of both</small></div>
-    <div><span class="tag" style="color:var(--amber)">Disagree</span><b>More severe state wins</b><small>with that node's confidence</small></div>
-    <div><span class="tag" style="color:var(--muted)">One offline</span><b>Use the other node</b><small>marked as degraded</small></div>
-  </div>
-</section>
-
-<!-- 10 PROTOCOL -->
-<section class="slide" id="s8" data-title="Protocol">
-  <div class="split">
-    <div>
-      <div class="eyebrow rv">The contract</div>
-      <h2 class="rv">One packet. <em>Any node.</em></h2>
-      <p class="lead rv">A tiny JSON schema. The fusion layer only needs <span class="mono" style="color:var(--accent)">state</span> and <span class="mono" style="color:var(--accent)">confidence</span> — so a new node only has to send the same packet.</p>
-    </div>
-<pre class="code rv"><span class="c">// sensors/node_a/state</span>
-{
-  <span class="k">"version"</span>:    <span class="n">1</span>,
-  <span class="k">"node"</span>:       <span class="s">"node_a"</span>,
-  <span class="k">"state"</span>:      <span class="n">1</span>,   <span class="c">// 0 idle · 1 presence · 2 abnormal</span>
-  <span class="k">"direction"</span>:  <span class="n">0</span>,   <span class="c">// 0 approaching · 1 away </span>
-  <span class="k">"confidence"</span>: <span class="n">0.92</span>,
-  <span class="k">"timestamp"</span>:  <span class="n">1732000000</span>,
-  <span class="k">"health"</span>:     <span class="s">"HEALTHY"</span>
-}</pre>
   </div>
 </section>
 
@@ -587,7 +500,7 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   <div class="logo rv"><i></i>CONCUR</div>
   <h2 class="rv">Trust what <em>two senses</em> agree on.</h2>
   <p class="lead rv">IEEE-Qualcomm Project 2026</p>
-  <div class="cta rv"><a class="btn" href="#s0">Back to start</a><a class="btn" href="#s6">Replay the demo</a><a class="btn solid" href="/" target="_blank" rel="noopener">Open live dashboard ↗</a></div>
+  <div class="cta rv"><a class="btn" href="#s0">Back to start</a><a class="btn solid" href="/" target="_blank" rel="noopener">Open live dashboard ↗</a></div>
 </section>
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
@@ -617,15 +530,19 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     }
   });
 
-  /* face the front (CONCUR lid) whenever the slide is shown, hold, then spin.
+  /* face the front (CONCUR lid) whenever the slide is shown, hold 0.25s, then spin.
      Reset on leave too, so it is already facing front while scrolling back in. */
-  const FRONT='90deg 0deg auto',HOLD=1500;let t;
+  const FRONT='90deg 0deg auto',HOLD=50;let t;
   const front=()=>{clearTimeout(t);mv.autoRotate=false;mv.cameraOrbit=FRONT;mv.resetTurntableRotation(0);mv.jumpCameraToGoal()};
-  mv.autoRotate=false;
-  new IntersectionObserver(es=>es.forEach(e=>{
-    front();
-    if(e.isIntersecting)t=setTimeout(()=>mv.autoRotate=true,HOLD);
-  }),{threshold:.3}).observe(mv.closest('section'));
+  /* wait until the model-viewer module has loaded: before that, resetTurntableRotation etc.
+     don't exist yet and front() would throw (the hero is visible immediately on page load). */
+  customElements.whenDefined('model-viewer').then(()=>{
+    mv.autoRotate=false;
+    new IntersectionObserver(es=>es.forEach(e=>{
+      front();
+      if(e.isIntersecting)t=setTimeout(()=>mv.autoRotate=true,HOLD);
+    }),{threshold:.3}).observe(mv.closest('section'));
+  });
 })();
 
 /* ---------- background network ---------- */
@@ -682,39 +599,6 @@ addEventListener('keydown',e=>{
     if(bump>.05){s='ABNORMAL DISTURBANCE';col='var(--red)'}else if(dist<=800){s='ACTIVE PRESENCE';col='var(--green)'}
     $('mState').textContent=s;$('mState').style.color=col;
   },350);
-})();
-
-/* ---------- Fusion simulator (mirrors fusion_dashboard/fusion.py) ---------- */
-(function(){
-  const L=['Idle','Active Presence','Abnormal Disturbance'];
-  const opts=[{v:null,l:'Offline'},{v:0,l:'Idle'},{v:1,l:'Active Presence'},{v:2,l:'Abnormal Disturbance'}];
-  const sel={A:1,B:2};
-  const $=id=>document.getElementById(id);
-  function build(k){
-    const seg=$('seg'+k);seg.innerHTML='';
-    opts.forEach(o=>{const b=document.createElement('button');b.textContent=o.l;b.classList.toggle('on',sel[k]===o.v);
-      b.onclick=()=>{sel[k]=o.v;build(k);run()};seg.appendChild(b)});
-  }
-  function fuse(a,b){
-    if(!a&&!b)return{state:null,conf:0,agree:null,note:'No data from either node yet.'};
-    if(!a||!b){const o=a||b,m=a?'Node B':'Node A';return{state:o.s,conf:o.c,agree:null,note:`${m} offline — showing the other node's reading only.`}}
-    if(a.s===b.s)return{state:a.s,conf:Math.round((a.c+b.c)*50)/100,agree:true,note:'Nodes agree.'};
-    const w=a.s>b.s?a:b;
-    return{state:w.s,conf:w.c,agree:false,note:`Nodes disagree (A: ${L[a.s]}, B: ${L[b.s]}).`};
-  }
-  function run(){
-    const a=sel.A===null?null:{s:sel.A,c:$('rA').value/100},b=sel.B===null?null:{s:sel.B,c:$('rB').value/100};
-    $('cA').textContent=(+$('rA').value/100).toFixed(2);$('cB').textContent=(+$('rB').value/100).toFixed(2);
-    const r=fuse(a,b),orb=$('oOrb');
-    orb.className='orb '+(r.state===null?'off':'s'+r.state);
-    $('oState').textContent=r.state===null?'No signal':L[r.state];
-    $('oConf').textContent=r.state===null?'—':'CONFIDENCE '+r.conf.toFixed(2);
-    const bd=$('oBadge');bd.className='badge '+(r.agree===true?'agree':r.agree===false?'dis':'na');
-    bd.textContent=r.agree===true?'AGREE':r.agree===false?'DISAGREE':'DEGRADED';
-    $('oNote').textContent=r.note;
-  }
-  ['rA','rB'].forEach(i=>$(i).addEventListener('input',run));
-  build('A');build('B');run();
 })();
 </script>
 </body>
