@@ -40,7 +40,6 @@ kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;paddi
 
 /* slides */
 section.slide{position:relative;z-index:5;min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;padding:88px max(36px,6vw) 72px}
-#s2{padding-bottom:120px}
 .eyebrow{font:500 16px var(--mono);letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:12px}
 .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
 h1,h2{font-weight:500;letter-spacing:-.03em;line-height:1.02}
@@ -140,15 +139,12 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 .closing h2{max-width:14ch;font-size:clamp(56px,8vw,128px)}
 .closing .cta{justify-content:center}
 
-.ans{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
 .model{width:100%;height:42vh;min-height:280px;background:transparent;--poster-color:transparent;filter:drop-shadow(0 0 40px rgba(55,230,255,.18))}
-@media(max-width:900px){.ans{grid-template-columns:1fr}}
-/* slide 3: shorter model + compact cards so the row clears the bottom edge */
-#s2{padding-top:72px;padding-bottom:56px}
-#s2 .model{height:34vh;min-height:240px}
-#s2 .grid{margin-top:20px}
-#s2 .card{padding:22px 26px}
-#s2 .card .big{margin:8px 0!important;font-size:clamp(44px,5vw,72px)}
+/* hero: copy left, 3D board right */
+.hero-row{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:40px;align-items:center;width:100%}
+#s0 .model{height:60vh;min-height:320px}
+#s0 h1{font-size:clamp(56px,8.5vw,150px)}
+@media(max-width:900px){.hero-row{grid-template-columns:1fr}#s0 .model{height:40vh}}
 .credit{font:500 17px var(--mono);letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:34px}
 .credit b{color:var(--text);font-weight:500}
 .tree{font:17px/1.7 var(--mono);color:var(--muted);margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
@@ -239,6 +235,8 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
 
 <!-- 01 HERO -->
 <section class="slide" id="s0" data-title="Intro">
+  <div class="hero-row">
+  <div class="hero-copy">
   <div class="logo rv"><i></i>CONCUR</div>
   <h1 class="rv"><span>Two senses.</span><span><em>One verdict.</em></span></h1>
   <div class="cta rv"><a class="btn solid" href="#s1">Begin the tour</a><a class="btn" href="/" target="_blank" rel="noopener">Live dashboard ↗</a></div>
@@ -247,6 +245,9 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     <div><b>3</b><span>Clear states</span></div>
     <div><b>500ms</b><span>Heartbeat</span></div>
     <div><b>1</b><span>Fused verdict</span></div>
+  </div>
+  </div>
+  <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate auto-rotate-delay="0" camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
   </div>
 </section>
 
@@ -262,26 +263,9 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
   <p class="lead rv" style="margin-top:34px"><strong>The challenge:</strong> gain the reliability of many views without paying for them in communication.</p>
 </section>
 
-<!-- 03 SOLUTION -->
-<section class="slide" id="s2" data-title="Solution">
-  <div class="eyebrow rv">Our answer</div>
-  <div class="ans">
-    <div>
-      <h2 class="rv">Decide at the edge. <em>Agree in the cloud.</em></h2>
-    </div>
-    <model-viewer class="rv model" src="assets/board.glb" alt="Arduino box 3D model" auto-rotate camera-controls disable-zoom touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" tone-mapping="aces" exposure="1.2" loading="eager"></model-viewer>
-  </div>
-  <div class="grid g3 rv">
-    <div class="card"><div class="tag">01 · Sense</div><div class="big" style="margin:14px 0">2×</div><ul class="sense-list"><li><b>Camera vision</b></li><li><b>Physical sensing</b><ul><li>Distance</li><li>Motion</li><li>Light</li></ul></li></ul></div>
-    <div class="card"><div class="tag">02 · Classify</div><div class="big" style="margin:14px 0">Local</div><ul class="sense-list"><li><b>Every node makes its own decision on-device.</b></li><li><b>No raw data</b><ul></ul></li></ul></div>
-
-    <div class="card"><div class="tag">03 · Fuse</div><div class="big" style="margin:14px 0">1</div><ul class="sense-list"><li><b>Fused state</b><ul><li>Confidence score</li><li>Agreement flag</li><li>Human-readable explanation</li></ul></li></ul></div>
-  </div>
-</section>
-
 <!-- 04 ARCHITECTURE -->
 <section class="slide" id="s3" data-title="Architecture">
-  <div class="eyebrow rv">System architecture</div>
+  <div class="eyebrow rv">Our Answer</div>
   <h2 class="rv">Small packets. <em>Big picture.</em></h2>
   <div class="arch-row">
   <div class="arch rv">
@@ -324,18 +308,15 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
       </g>
       <g fill="#37e6ff" font-size="14" letter-spacing="2" text-anchor="middle"><text x="768" y="182">LIVE STREAM</text></g>
       <g fill="#3dff9a"><circle cx="324" cy="36" r="6"/><circle cx="324" cy="246" r="6"/></g>
-      <text x="10" y="462" fill="#8c9ab8" font-size="16">● Onboard LED on each node shows its local decision, independent of the dashboard</text>
     </svg>
   </div>
   <div class="packet rv">
 <pre class="code">
 {
-  <span class="k">"version"</span>:    <span class="n">1</span>,
   <span class="k">"node"</span>:       <span class="s">"node_a"</span>,
   <span class="k">"state"</span>:      <span class="n">1</span>,   <span class="c">// 0 idle · 1 presence · 2 abnormal</span>
   <span class="k">"direction"</span>:  <span class="n">0</span>,   <span class="c">// 0 approaching · 1 away </span>
   <span class="k">"confidence"</span>: <span class="n">0.92</span>,
-  <span class="k">"timestamp"</span>:  <span class="n">1732000000</span>,
   <span class="k">"health"</span>:     <span class="s">"HEALTHY"</span>
 }</pre>
   </div>
@@ -549,15 +530,19 @@ pre .k{color:var(--accent)}pre .s{color:var(--green)}pre .n{color:var(--amber)}p
     }
   });
 
-  /* face the front (CONCUR lid) whenever the slide is shown, hold, then spin.
+  /* face the front (CONCUR lid) whenever the slide is shown, hold 0.25s, then spin.
      Reset on leave too, so it is already facing front while scrolling back in. */
-  const FRONT='90deg 0deg auto',HOLD=1500;let t;
+  const FRONT='90deg 0deg auto',HOLD=50;let t;
   const front=()=>{clearTimeout(t);mv.autoRotate=false;mv.cameraOrbit=FRONT;mv.resetTurntableRotation(0);mv.jumpCameraToGoal()};
-  mv.autoRotate=false;
-  new IntersectionObserver(es=>es.forEach(e=>{
-    front();
-    if(e.isIntersecting)t=setTimeout(()=>mv.autoRotate=true,HOLD);
-  }),{threshold:.3}).observe(mv.closest('section'));
+  /* wait until the model-viewer module has loaded: before that, resetTurntableRotation etc.
+     don't exist yet and front() would throw (the hero is visible immediately on page load). */
+  customElements.whenDefined('model-viewer').then(()=>{
+    mv.autoRotate=false;
+    new IntersectionObserver(es=>es.forEach(e=>{
+      front();
+      if(e.isIntersecting)t=setTimeout(()=>mv.autoRotate=true,HOLD);
+    }),{threshold:.3}).observe(mv.closest('section'));
+  });
 })();
 
 /* ---------- background network ---------- */
